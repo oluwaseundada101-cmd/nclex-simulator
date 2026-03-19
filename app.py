@@ -382,12 +382,24 @@ def grade_question(q, ans):
     elif qt=="BOWTIE":
         ans = ans or {}
         ca  = q["correct_answers"]
-        c_ok = ans.get("condition","") == ca.get("condition","")
-        a_ok = set(ans.get("actions",[])) == set(ca.get("actions",[]))
-        p_ok = set(ans.get("parameters",[])) == set(ca.get("parameters",[]))
+        # Support both new keys and old keys in correct_answers
+        correct_cond   = ca.get("condition") or ca.get("cause", "")
+        correct_actions= ca.get("actions")   or ca.get("action", [])
+        correct_params = ca.get("parameters") or ca.get("outcome", "")
+        # Support both new keys and old keys in user answers
+        user_cond   = ans.get("condition") or ans.get("cause", "")
+        user_actions= ans.get("actions")   or ans.get("action", [])
+        user_params = ans.get("parameters") or ans.get("outcome", "")
+        # Normalize: outcome was a single string in old format, parameters is a list
+        if isinstance(correct_params, str): correct_params = [correct_params]
+        if isinstance(user_params, str):    user_params    = [user_params]
+        c_ok = user_cond == correct_cond
+        a_ok = set(user_actions) == set(correct_actions)
+        p_ok = set(user_params)  == set(correct_params)
         return int(c_ok)+int(a_ok)+int(p_ok), 3, {
             "condition_ok":c_ok,"actions_ok":a_ok,"parameters_ok":p_ok,
-            "correct":ca,"user":ans}
+            "correct":{"condition":correct_cond,"actions":correct_actions,"parameters":correct_params},
+            "user":{"condition":user_cond,"actions":user_actions,"parameters":user_params}}
 
     elif qt in ("MATRIX","TREND","CLOZE"):
         ans = ans or {}
@@ -455,11 +467,14 @@ def render_bowtie(q, qid, locked):
     True NCLEX bowtie visual:
       [Actions to Take panel] → ◇ Condition ◇ → [Parameters to Monitor panel]
     Each side uses a multiselect (select 2); center uses radio (select 1).
+    Backward-compatible: also reads old cause/action/outcome keys.
     """
     bt   = q["bowtie"]
-    c_opts = bt.get("condition_options",[])
-    a_opts = bt.get("actions_to_take",[])
-    p_opts = bt.get("parameters_to_monitor",[])
+    # Support both new keys (condition_options/actions_to_take/parameters_to_monitor)
+    # and old keys (causes/actions/outcomes) for backward compatibility
+    c_opts = bt.get("condition_options") or bt.get("causes", [])
+    a_opts = bt.get("actions_to_take")   or bt.get("actions", [])
+    p_opts = bt.get("parameters_to_monitor") or bt.get("outcomes", [])
     cur    = st.session_state.answers.get(qid,{})
 
     st.markdown('<div class="type-banner banner-bowtie">Bowtie — Select the <strong>condition</strong> (center), <strong>2 actions to take</strong> (left), and <strong>2 parameters to monitor</strong> (right).</div>',
