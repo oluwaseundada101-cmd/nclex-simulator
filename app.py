@@ -1,1201 +1,737 @@
 """
-NGN NCLEX Simulator — Framework Edition v3
-- Unified clinical scenario + question in one card (no disconnect)
-- True NCLEX bowtie visual (boxes + arrows, not columns)
-- Matrix: proper radio-button rows with header alignment
-- Trend: compact table + inline selects on same screen
-- Cloze: inline sentence with embedded dropdowns
-- Metadata collapsed into a subtle footer row
-- Optimized for 14-inch laptop (no excessive scrolling)
-"""
-import json, time, random
-import streamlit as st
-from pathlib import Path
+app.py — NGN NCLEX Simulator v4 main entry point.
 
+Features:
+  - streamlit-autorefresh every 30 s during test (live countdown timer)
+  - JSON load wrapped in try/except → friendly error + reload button
+  - len(questions) used everywhere — never trusts JSON question_count
+  - Modular: home.py / renderers.py / grading.py / persistence.py / config.py
+  - Stop-rule enforcement (Guided Mode)
+  - SQLite progress tracking
+  - Per-option rationales on review screen
+  - Bowtie: schema-driven counts (intentional: 1 condition, 2 actions, 2 parameters)
+"""
+import json
+import os
+import time
+import html as _html
+import streamlit as st
+
+# ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="NGN NCLEX Simulator",
-    page_icon="🏥",
+    page_title="NGN NCLEX Simulator · Unit 4",
+    page_icon="🩺",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-*, html, body, [class*="css"] { font-family: 'Inter', sans-serif; box-sizing: border-box; }
-.stApp { background: #ECEEF2; }
-[data-testid="stSidebar"] { background: #FFFFFF; border-right: 1px solid #D4D1CA; }
+# ── Optional autorefresh (safe import) ───────────────────────────────────────
+try:
+    from streamlit_autorefresh import st_autorefresh
+    AUTOREFRESH_AVAILABLE = True
+except ImportError:
+    AUTOREFRESH_AVAILABLE = False
 
-/* ── MAIN QUESTION CARD ── */
-.qcard {
-  background: #FFFFFF;
-  border: 1px solid #D1D5DB;
-  border-radius: 12px;
-  padding: 0;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  margin-bottom: 16px;
-}
+# ── Local imports ─────────────────────────────────────────────────────────────
+from config import LAYER_INFO, LAYER_ORDER, LAYER_STOP_RULES, PASSING_PCT
+from grading import aggregate_results, check_layer_readiness, get_miss_explanation
+from persistence import (
+    init_db, save_session, get_session_history,
+    get_layer_mastery_summary, get_priority_pairs
+)
+from renderers import (
+    render_qcard_top, render_mc, render_sata, render_bowtie,
+    render_matrix, render_trend, render_cloze, is_answered, h
+)
+from home import render_home
 
-/* Scenario stripe at top of card */
-.scenario-stripe {
-  background: #FFFBEB;
-  border-bottom: 2px solid #FCD34D;
-  padding: 14px 20px;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: #1C1917;
-}
-.scenario-label {
-  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.06em; color: #B45309; margin-bottom: 6px;
-}
+# ── Init DB ───────────────────────────────────────────────────────────────────
+init_db()
 
-/* Question stem area */
-.qstem {
-  padding: 16px 20px 10px 20px;
-}
-.qnum {
-  font-size: 0.75rem; color: #9CA3AF; margin-bottom: 6px;
-}
-.stem-text {
-  font-size: 1rem; font-weight: 600; color: #111827; line-height: 1.6;
-  margin-bottom: 8px;
-}
-.badge-row { margin-bottom: 6px; }
+# ── Resolve paths ─────────────────────────────────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-/* Metadata footer stripe */
-.meta-stripe {
-  background: #F9FAFB;
-  border-top: 1px solid #E5E7EB;
-  padding: 7px 20px;
-  font-size: 0.75rem;
-  color: #6B7280;
-}
-.meta-stripe b { color: #374151; }
 
-/* ── ANSWER AREA ── */
-.answer-area {
-  padding: 14px 20px 18px 20px;
-  border-top: 1px solid #F3F4F6;
-}
+def _bank_paths():
+    """Return all .json paths in BASE_DIR that look like question banks."""
+    paths = []
+    for fname in os.listdir(BASE_DIR):
+        if fname.endswith(".json") and fname not in ("progress.db",):
+            paths.append(os.path.join(BASE_DIR, fname))
+    return sorted(paths)
 
-/* Type instruction banner */
-.type-banner {
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.banner-bowtie  { background:#FFFBEB; color:#92400E; border:1px solid #FCD34D; }
-.banner-matrix  { background:#FDF4FF; color:#6B21A8; border:1px solid #E9D5FF; }
-.banner-trend   { background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; }
-.banner-cloze   { background:#EFF6FF; color:#1E40AF; border:1px solid #BFDBFE; }
 
-/* ── BADGES ── */
-.badge {
-  display:inline-block; font-size:0.68rem; font-weight:700;
-  padding:2px 9px; border-radius:100px; margin-right:4px; margin-bottom:2px;
-}
-.badge-mc     { background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE; }
-.badge-sata   { background:#E8F4F5; color:#01696F; border:1px solid #B3DADE; }
-.badge-bowtie { background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; }
-.badge-matrix { background:#FCE7F3; color:#9D174D; border:1px solid #F9A8D4; }
-.badge-trend  { background:#ECFDF5; color:#065F46; border:1px solid #6EE7B7; }
-.badge-cloze  { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
-.badge-ngn    { background:#FFF1F2; color:#9F1239; border:1px solid #FDA4AF; }
-.badge-layer-a   { background:#FEF9C3; color:#713F12; border:1px solid #FDE68A; }
-.badge-layer-aa  { background:#FFF7ED; color:#9A3412; border:1px solid #FDBA74; }
-.badge-layer-b   { background:#EFF6FF; color:#1E40AF; border:1px solid #BFDBFE; }
-.badge-layer-c   { background:#F0FDF4; color:#14532D; border:1px solid #BBF7D0; }
-.badge-layer-d   { background:#FDF4FF; color:#581C87; border:1px solid #E9D5FF; }
-.badge-layer-ngn { background:#FFF1F2; color:#9F1239; border:1px solid #FDA4AF; }
+# ── Load question banks (cached) ──────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def load_banks():
+    banks    = []
+    errors   = []
+    for path in _bank_paths():
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+        except json.JSONDecodeError as e:
+            errors.append(f"**{os.path.basename(path)}** — JSON parse error: `{e}`")
+            continue
+        except Exception as e:
+            errors.append(f"**{os.path.basename(path)}** — could not read: `{e}`")
+            continue
 
-/* ── BOWTIE DIAGRAM ── */
-.bowtie-wrap {
-  display: grid;
-  grid-template-columns: 1fr 36px 180px 36px 1fr;
-  gap: 0;
-  align-items: center;
-  margin: 12px 0;
-}
-.bt-panel {
-  background: #F8FAFC;
-  border: 1px solid #CBD5E1;
-  border-radius: 8px;
-  padding: 10px 12px;
-  min-height: 160px;
-}
-.bt-center {
-  background: #FFFBEB;
-  border: 2px solid #F59E0B;
-  border-radius: 8px;
-  padding: 10px 12px;
-  text-align: center;
-  min-height: 160px;
-}
-.bt-arrow {
-  text-align: center;
-  font-size: 1.4rem;
-  color: #94A3B8;
-  line-height: 1;
-  padding: 0 2px;
-}
-.bt-header {
-  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.05em; color: #64748B; margin-bottom: 8px;
-  padding-bottom: 4px; border-bottom: 1px solid #E2E8F0;
-}
-.bt-center-header {
-  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.05em; color: #B45309; margin-bottom: 8px;
-  padding-bottom: 4px; border-bottom: 1px solid #FDE68A;
-}
-.bt-opt {
-  padding: 4px 0; font-size: 0.88rem; color: #374151; line-height: 1.4;
-}
-.bt-opt-selected { color: #01696F; font-weight: 600; }
+        # Normalise: accept either a bare list or {banks: [...]} or {questions: [...]}
+        if isinstance(raw, list):
+            # Top-level array = multiple banks
+            for b in raw:
+                if "questions" in b:
+                    b["questions"] = b["questions"]  # count from len(), never from field
+                    banks.append(b)
+        elif isinstance(raw, dict):
+            if "banks" in raw:
+                for b in raw["banks"]:
+                    banks.append(b)
+            elif "questions" in raw:
+                banks.append(raw)
+            else:
+                errors.append(f"**{os.path.basename(path)}** — unrecognised structure "
+                               f"(no 'questions' or 'banks' key found)")
 
-/* ── MATRIX TABLE ── */
-.mat-wrap { overflow-x: auto; }
-.mat-table {
-  width: 100%; border-collapse: collapse; font-size: 0.88rem;
-}
-.mat-table th {
-  background: #F1F5F9; padding: 9px 14px; text-align: center;
-  font-weight: 700; font-size: 0.8rem; color: #374151;
-  border: 1px solid #CBD5E1; white-space: nowrap;
-}
-.mat-table th.row-header { text-align: left; min-width: 260px; }
-.mat-table td {
-  padding: 9px 14px; border: 1px solid #E2E8F0;
-  vertical-align: middle; color: #1E293B;
-}
-.mat-table td.cell-center { text-align: center; }
-.mat-table tr:hover td { background: #F8FAFC; }
+    return banks, errors
 
-/* ── TREND TABLE ── */
-.trend-tbl {
-  width: 100%; border-collapse: collapse; font-size: 0.88rem;
-  margin-bottom: 14px;
-}
-.trend-tbl th {
-  background: #ECFDF5; padding: 8px 12px; text-align: center;
-  font-size: 0.78rem; font-weight: 700; color: #065F46;
-  border: 1px solid #A7F3D0; white-space: nowrap;
-}
-.trend-tbl th.row-header { text-align: left; }
-.trend-tbl td {
-  padding: 8px 12px; border: 1px solid #D1FAE5;
-  text-align: center; color: #1E293B;
-}
-.trend-tbl td.last-val { background: #FEF9C3; font-weight: 600; }
-.trend-tbl td.row-label { text-align: left; font-weight: 500; }
 
-/* ── CLOZE ── */
-.cloze-text {
-  font-size: 0.95rem; line-height: 2.4; color: #1E293B;
-}
-.blank-placeholder {
-  display: inline-block; min-width: 180px; background: #EFF6FF;
-  border: 2px dashed #3B82F6; border-radius: 6px; padding: 0 10px;
-  font-weight: 600; color: #1D4ED8; font-size: 0.88rem;
-  vertical-align: middle;
-}
+# ── Sidebar ───────────────────────────────────────────────────────────────────
+def render_sidebar(banks, errors):
+    with st.sidebar:
+        st.markdown("""
+        <div style="font-weight:800;font-size:1.05rem;color:#01696F;
+                    margin-bottom:2px;">🩺 NGN Simulator</div>
+        <div style="font-size:0.78rem;color:#9CA3AF;margin-bottom:16px;">
+            Unit 4 HCIIIA · v4
+        </div>
+        """, unsafe_allow_html=True)
 
-/* ── TIMER ── */
-.timer { background:#01696F; color:white; border-radius:8px; padding:8px 14px;
-         font-size:1.05rem; font-weight:700; text-align:center; margin-bottom:12px; }
-.timer-warn { background:#B45309 !important; }
-.timer-crit { background:#9D174D !important; }
+        # Navigation
+        screen = st.session_state.get("screen", "home")
+        if screen in ("test", "review"):
+            if st.button("← Back to Home", key="btn_nav_home"):
+                st.session_state.screen = "home"
+                st.rerun()
+        if screen == "home":
+            if st.button("📊 Progress History", key="btn_nav_progress"):
+                st.session_state.screen = "progress"
+                st.rerun()
+        if screen == "progress":
+            if st.button("← Back to Home", key="btn_nav_home2"):
+                st.session_state.screen = "home"
+                st.rerun()
 
-/* ── PROGRESS ── */
-.prog-wrap { background:#E5E7EB; border-radius:100px; height:6px; margin:4px 0 8px; }
-.prog-fill  { background:#01696F; height:6px; border-radius:100px; }
+        st.markdown("---")
 
-/* ── RESULTS ── */
-.score-card {
-  background:#FFF; border:1px solid #D4D1CA; border-radius:12px;
-  padding:1.6rem 2rem; text-align:center; margin-bottom:1rem;
-}
-.score-pass { border-top:5px solid #059669; }
-.score-fail { border-top:5px solid #DC2626; }
-.score-num  { font-size:3rem; font-weight:800; line-height:1; }
-.score-pass .score-num { color:#059669; }
-.score-fail .score-num { color:#DC2626; }
-.rat-ok   { background:#F0FDF4; border-left:4px solid #059669; border-radius:6px; padding:10px 14px; font-size:0.87rem; margin-top:8px; }
-.rat-miss { background:#FFF1F2; border-left:4px solid #DC2626; border-radius:6px; padding:10px 14px; font-size:0.87rem; margin-top:8px; }
+        # Reload button
+        if st.button("🔄 Reload Question Banks", key="btn_reload"):
+            st.cache_data.clear()
+            st.rerun()
 
-/* ── MISC ── */
-.stButton>button {
-  background:#01696F; color:#FFF; border:none; border-radius:8px;
-  padding:8px 20px; font-weight:600; font-size:0.92rem;
-}
-.stButton>button:hover { background:#0C4E54; color:#FFF; }
-div[data-testid="stCheckbox"] label { font-size: 0.88rem !important; }
-#MainMenu, footer, header { visibility:hidden; }
+        # Error display
+        if errors:
+            st.markdown("**⚠️ Bank load errors:**")
+            for e in errors:
+                st.error(e)
 
-/* Reduce Streamlit default vertical padding */
-.block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-section[data-testid="stSidebar"] .block-container { padding-top: 1.5rem !important; }
-</style>
-""", unsafe_allow_html=True)
+        # Bank count
+        if banks:
+            total_q = sum(len(b.get("questions", [])) for b in banks)
+            st.markdown(
+                f'<div style="font-size:0.8rem;color:#6B7280;">'
+                f'{len(banks)} bank{"s" if len(banks)!=1 else ""} · '
+                f'{total_q} question{"s" if total_q!=1 else ""}</div>',
+                unsafe_allow_html=True)
 
-# ─── LAYER CONFIG ─────────────────────────────────────────────────────────────
-LAYER_INFO = {
-    "A":        {"label": "Layer A — Recall",           "cls": "badge-layer-a"},
-    "A-Applied":{"label": "Layer A-Applied — Translation","cls":"badge-layer-aa"},
-    "B":        {"label": "Layer B — Mechanism",        "cls": "badge-layer-b"},
-    "C":        {"label": "Layer C — Clinical Judgment","cls": "badge-layer-c"},
-    "D":        {"label": "Layer D — Interference",     "cls": "badge-layer-d"},
-    "NGN":      {"label": "NGN Format",                 "cls": "badge-layer-ngn"},
-}
-LAYER_STOP_RULES = {"A": 95, "A-Applied": 90, "C": 90, "D": 85}
+        st.markdown("---")
+        st.markdown(
+            '<div style="font-size:0.72rem;color:#9CA3AF;">'
+            'Source: Unit 4 HCIIIA lecture slides, hybrid supplement, mastery guide<br>'
+            'Framework: Prof Master Framework v1.0<br>'
+            'Formats: MC · SATA · Bowtie · Matrix · Trend · Cloze</div>',
+            unsafe_allow_html=True)
 
-# ─── DATA ─────────────────────────────────────────────────────────────────────
-@st.cache_data
-def load_data():
-    for p in [Path(__file__).parent/"questions.json",
-              Path(__file__).parent.parent/"questions.json"]:
-        if p.exists():
-            return json.loads(p.read_text(encoding="utf-8"))
-    return []
 
-data  = load_data()
-BANKS = {b["id"]: b for b in data}
+# ── CSS ───────────────────────────────────────────────────────────────────────
+def inject_css():
+    st.markdown("""
+    <style>
+    /* ── Base ── */
+    .stApp { background: #F7F6F2; }
+    .block-container { max-width: 900px; padding: 1.5rem 1.5rem; }
 
-# ─── SESSION STATE ─────────────────────────────────────────────────────────────
-def init():
-    defaults = {
-        "screen":"home","bank_id":None,"questions":[],
-        "idx":0,"answers":{},"locked":{},"start_time":None,
-        "timer_min":90,"elapsed":0,"shuffle":True,"study_layer":"All Layers",
+    /* ── Badges ── */
+    .badge {
+        display:inline-block;border-radius:12px;padding:2px 10px;
+        font-size:0.72rem;font-weight:700;letter-spacing:0.04em;
+        white-space:nowrap;margin-right:4px;
     }
-    for k,v in defaults.items():
-        if k not in st.session_state:
-            st.session_state[k] = v
-init()
+    .badge-mc      { background:#DBEAFE;color:#1E40AF; }
+    .badge-sata    { background:#D1FAE5;color:#065F46; }
+    .badge-bowtie  { background:#FEF3C7;color:#92400E; }
+    .badge-matrix  { background:#EDE9FE;color:#4C1D95; }
+    .badge-trend   { background:#FCE7F3;color:#9D174D; }
+    .badge-cloze   { background:#FFEDD5;color:#9A3412; }
+    .badge-ngn     { background:#F59E0B22;color:#92400E;border:1px solid #F59E0B; }
 
-# ─── HELPERS ─────────────────────────────────────────────────────────────────
-def fmt_time(s):
-    m,s = divmod(int(max(0,s)),60); h,m = divmod(m,60)
-    return f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
+    .badge-layer-a   { background:#D1FAE5;color:#065F46; }
+    .badge-layer-aa  { background:#A7F3D0;color:#064E3B; }
+    .badge-layer-b   { background:#DBEAFE;color:#1E40AF; }
+    .badge-layer-c   { background:#EDE9FE;color:#4C1D95; }
+    .badge-layer-d   { background:#FEE2E2;color:#991B1B; }
+    .badge-layer-ngn { background:#FEF3C7;color:#92400E; }
 
-def remaining():
-    if not st.session_state.start_time:
-        return st.session_state.timer_min*60
-    return max(0, st.session_state.timer_min*60-(time.time()-st.session_state.start_time))
+    /* ── Question card ── */
+    .qcard {
+        background:#FFFFFF;border:1px solid #E5E7EB;
+        border-radius:12px;padding:20px 22px;margin-bottom:16px;
+        box-shadow:0 1px 4px rgba(0,0,0,0.06);
+    }
+    .scenario-stripe {
+        background:#F0FAFA;border-left:4px solid #01696F;
+        border-radius:0 8px 8px 0;padding:12px 16px;
+        margin-bottom:14px;font-size:0.88rem;color:#1E293B;
+        line-height:1.6;
+    }
+    .scenario-label {
+        font-size:0.74rem;font-weight:700;color:#01696F;
+        text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;
+    }
+    .qstem { margin-bottom:8px; }
+    .qnum  { font-size:0.75rem;color:#9CA3AF;font-weight:600;margin-bottom:5px; }
+    .badge-row { margin-bottom:9px; }
+    .stem-text { font-size:0.97rem;font-weight:600;color:#111827;line-height:1.55; }
+    .meta-stripe {
+        font-size:0.75rem;color:#9CA3AF;margin-top:6px;
+        padding-top:6px;border-top:1px solid #F3F4F6;
+    }
 
-def start_test(bank_id, q_count, shuffle, timer_min, layer_filter):
-    bank = BANKS[bank_id]
-    qs   = list(bank["questions"])
-    if layer_filter != "All Layers":
-        qs = [q for q in qs if q.get("layer")==layer_filter] or qs
-    if shuffle: random.shuffle(qs)
-    qs = qs[:q_count]
-    st.session_state.update({
-        "screen":"test","bank_id":bank_id,"questions":qs,
-        "idx":0,"answers":{},"locked":{},"start_time":time.time(),
-        "timer_min":timer_min,"shuffle":shuffle,"study_layer":layer_filter,
-    })
+    /* ── Type banners ── */
+    .type-banner {
+        border-radius:6px;padding:8px 12px;
+        font-size:0.82rem;font-weight:700;margin-bottom:12px;
+    }
+    .banner-bowtie  { background:#FEF9C3;color:#92400E; }
+    .banner-matrix  { background:#EDE9FE;color:#4C1D95; }
+    .banner-trend   { background:#FCE7F3;color:#9D174D; }
+    .banner-cloze   { background:#FFEDD5;color:#9A3412; }
 
-def go_home():
-    st.session_state.update({"screen":"home","answers":{},"locked":{},"start_time":None})
+    /* ── Bowtie headers ── */
+    .bt-header        { font-weight:700;font-size:0.82rem;color:#374151;margin-bottom:4px; }
+    .bt-center-header { font-weight:700;font-size:0.82rem;color:#92400E;margin-bottom:4px; }
 
-# ─── BADGE HELPERS ────────────────────────────────────────────────────────────
-TYPE_BADGE = {
-    "MC":    ("badge-mc",    "Multiple Choice"),
-    "SATA":  ("badge-sata",  "Select All That Apply"),
-    "BOWTIE":("badge-bowtie","Bowtie"),
-    "MATRIX":("badge-matrix","Matrix Grid"),
-    "TREND": ("badge-trend", "Trend"),
-    "CLOZE": ("badge-cloze", "Drop-Down / Cloze"),
-}
-def type_badge_html(qt):
-    cls, label = TYPE_BADGE.get(qt, ("badge-ngn","NGN"))
-    return f'<span class="badge {cls}">{label}</span>'
+    /* ── Trend table ── */
+    .trend-tbl {
+        border-collapse:collapse;width:100%;font-size:0.84rem;
+        margin-bottom:12px;
+    }
+    .trend-tbl th, .trend-tbl td {
+        padding:7px 10px;border:1px solid #E5E7EB;text-align:center;
+    }
+    .trend-tbl .row-header { font-weight:700;text-align:left;background:#F9FAFB; }
+    .trend-tbl .row-label  { text-align:left;color:#374151;font-weight:600; }
+    .trend-tbl thead th    { background:#F1F5F9;font-weight:700;color:#374151; }
+    .trend-tbl .last-val   { background:#FFF7ED;font-weight:700;color:#C2410C; }
 
-def layer_badge_html(q):
-    lyr   = q.get("layer","")
-    sub   = q.get("layer_subtype","")
-    info  = LAYER_INFO.get(lyr,{})
-    html  = f'<span class="badge {info.get("cls","")}">{info.get("label",lyr)}</span>' if info else ""
-    if sub:
-        html += f'<span class="badge" style="background:#F1F5F9;color:#64748B;border:1px solid #CBD5E1;">{sub}</span>'
-    return html
+    /* ── Cloze ── */
+    .cloze-text      { font-size:0.93rem;color:#1E293B;line-height:1.65;margin-bottom:8px; }
+    .blank-placeholder {
+        display:inline-block;background:#F0FAFA;border:1px solid #01696F;
+        border-radius:4px;padding:1px 8px;color:#01696F;font-weight:700;
+    }
 
-def meta_html(q):
-    parts = []
-    if q.get("nclex_category"):    parts.append(f'<b>Category:</b> {q["nclex_category"]}')
-    if q.get("nclex_subcategory"): parts.append(f'<b>Subcategory:</b> {q["nclex_subcategory"]}')
-    if q.get("concept_bucket"):    parts.append(f'<b>Concept:</b> {q["concept_bucket"]}')
-    if q.get("interference_pair"): parts.append(f'<b>Interference Pair:</b> {q["interference_pair"]}')
-    return " &nbsp;·&nbsp; ".join(parts)
+    /* ── Timer bar ── */
+    .timer-ok      { color:#059669;font-weight:800;font-size:1.15rem; }
+    .timer-warn    { color:#D97706;font-weight:800;font-size:1.15rem; }
+    .timer-danger  { color:#DC2626;font-weight:800;font-size:1.15rem;
+                     animation:pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-# ─── QUESTION HEADER (unified card top) ──────────────────────────────────────
-def render_qcard_top(q, idx, total):
-    qt = q["type"]
-    # --- scenario stripe ---
-    scenario = q.get("case_study","")
-    scenario_html = ""
-    if scenario:
-        scenario_html = f"""
-        <div class="scenario-stripe">
-          <div class="scenario-label">📋 Clinical Scenario</div>
-          {scenario}
-        </div>"""
+    /* ── Result card ── */
+    .result-card {
+        background:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;
+        padding:20px 24px;margin-bottom:14px;
+    }
+    .correct-banner   { background:#D1FAE5;border-left:4px solid #059669; }
+    .incorrect-banner { background:#FEE2E2;border-left:4px solid #EF4444; }
+    .partial-banner   { background:#FEF3C7;border-left:4px solid #F59E0B; }
 
-    # --- stem ---
-    stem_html = f"""
-    <div class="qstem">
-      <div class="qnum">Question {idx+1} of {total}</div>
-      <div class="badge-row">
-        {type_badge_html(qt)}
-        {"<span class='badge badge-ngn'>NGN</span>" if q.get("ngn") else ""}
-        {layer_badge_html(q)}
-      </div>
-      <div class="stem-text">{q["text"]}</div>
-    </div>"""
+    /* ── Misc ── */
+    .stButton > button { border-radius:8px !important; }
+    div[data-testid="stRadio"] label { font-size:0.88rem !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
-    # --- meta footer ---
-    m = meta_html(q)
-    meta_footer = f'<div class="meta-stripe">{m}</div>' if m else ""
 
-    st.markdown(
-        f'<div class="qcard">{scenario_html}{stem_html}{meta_footer}</div>',
-        unsafe_allow_html=True
-    )
+# ── Timer helpers ─────────────────────────────────────────────────────────────
+def seconds_remaining():
+    if not st.session_state.get("use_timer"):
+        return None
+    start   = st.session_state.get("start_time", time.time())
+    minutes = st.session_state.get("timer_minutes", 30)
+    elapsed = time.time() - start
+    return max(0, minutes * 60 - elapsed)
 
-# ─── GRADING ─────────────────────────────────────────────────────────────────
-def grade_question(q, ans):
-    qt = q["type"]
-    if qt in ("MC","SATA"):
-        correct = set(q["correct_answers"])
-        user    = set(ans) if ans else set()
-        if qt=="MC":
-            return (1 if user==correct else 0), 1, {"correct":correct,"user":user}
-        pts = sum(1 for x in user if x in correct)-sum(1 for x in user if x not in correct)
-        return max(0,pts), len(correct), {"correct":correct,"user":user}
 
-    elif qt=="BOWTIE":
-        ans = ans or {}
-        ca  = q["correct_answers"]
-        # Support both new keys and old keys in correct_answers
-        correct_cond   = ca.get("condition") or ca.get("cause", "")
-        correct_actions= ca.get("actions")   or ca.get("action", [])
-        correct_params = ca.get("parameters") or ca.get("outcome", "")
-        # Support both new keys and old keys in user answers
-        user_cond   = ans.get("condition") or ans.get("cause", "")
-        user_actions= ans.get("actions")   or ans.get("action", [])
-        user_params = ans.get("parameters") or ans.get("outcome", "")
-        # Normalize: outcome was a single string in old format, parameters is a list
-        if isinstance(correct_params, str): correct_params = [correct_params]
-        if isinstance(user_params, str):    user_params    = [user_params]
-        c_ok = user_cond == correct_cond
-        a_ok = set(user_actions) == set(correct_actions)
-        p_ok = set(user_params)  == set(correct_params)
-        return int(c_ok)+int(a_ok)+int(p_ok), 3, {
-            "condition_ok":c_ok,"actions_ok":a_ok,"parameters_ok":p_ok,
-            "correct":{"condition":correct_cond,"actions":correct_actions,"parameters":correct_params},
-            "user":{"condition":user_cond,"actions":user_actions,"parameters":user_params}}
+def render_timer(container=None):
+    """Render the countdown timer. Returns True when time is up (triggers auto-submit).
 
-    elif qt in ("MATRIX","TREND","CLOZE"):
-        ans = ans or {}
-        cm  = q["correct_answers"]
-        earned = sum(1 for k,v in cm.items() if ans.get(k)==v)
-        return earned, len(cm), {"correct":cm,"user":ans}
+    Uses a st.empty() container when provided so the timer updates in-place
+    rather than appending a new element every 5-second refresh cycle.
+    """
+    rem = seconds_remaining()
+    if rem is None:
+        return False  # timer disabled
 
-    return 0,1,{}
+    mins = int(rem) // 60
+    secs = int(rem) % 60
+    label = f"\u23f1 {mins:02d}:{secs:02d}"
 
-# ─── ANSWER COMPLETENESS ─────────────────────────────────────────────────────
-def is_answered(q, qid):
-    ans = st.session_state.answers.get(qid)
-    qt  = q["type"]
-    if qt in ("MC","SATA"):  return bool(ans)
-    if qt=="BOWTIE":
-        return (ans and bool(ans.get("condition"))
-                and len(ans.get("actions",[]))==2
-                and len(ans.get("parameters",[]))==2)
-    if qt=="MATRIX":  return ans and len(ans)>=len(q["matrix"]["rows"])
-    if qt=="TREND":   return ans and len(ans)>=len(q["trend"]["items"])
-    if qt=="CLOZE":
-        blanks=[p for p in q["cloze"]["sentence_parts"] if isinstance(p,dict)]
-        return ans and len(ans)>=len(blanks)
+    target = container if container is not None else st
+
+    if rem <= 0:
+        target.markdown(
+            '<div class="timer-danger">\u23f0 Time\'s up! Auto-submitting\u2026</div>',
+            unsafe_allow_html=True)
+        return True  # signal auto-submit
+
+    cls = "timer-ok" if rem > 120 else ("timer-warn" if rem > 30 else "timer-danger")
+    target.markdown(f'<div class="{cls}">{label}</div>', unsafe_allow_html=True)
     return False
 
-# ─── RENDERERS ───────────────────────────────────────────────────────────────
 
-def render_mc(q, qid, locked):
-    opts = q["options"]; keys = sorted(opts.keys())
-    cur  = st.session_state.answers.get(qid,[])
-    cur_val = cur[0] if cur else None
-    if locked:
-        for k in keys:
-            sel = k==cur_val
-            icon="◉" if sel else "○"
-            color="#01696F" if sel else "#6B7280"
-            st.markdown(f'<div style="padding:5px 0;color:{color};">{icon} <b>{k}.</b> {opts[k]}</div>',
-                        unsafe_allow_html=True)
-    else:
-        idx_d = keys.index(cur_val) if cur_val in keys else None
-        choice = st.radio("", keys, index=idx_d,
-                          format_func=lambda k:f"{k}.  {opts[k]}",
-                          key=f"mc_{qid}", label_visibility="collapsed")
-        st.session_state.answers[qid] = [choice] if choice else []
+# ── Test screen ───────────────────────────────────────────────────────────────
+def render_test_screen():
+    # Autorefresh every 5 s — tight enough for a visible countdown,
+    # light enough not to thrash hosted deployments.
+    if AUTOREFRESH_AVAILABLE and st.session_state.get("use_timer"):
+        st_autorefresh(interval=5_000, key="timer_refresh")
 
-def render_sata(q, qid, locked):
-    opts = q["options"]; keys = sorted(opts.keys())
-    cur  = st.session_state.answers.get(qid,[])
-    st.markdown('<div style="color:#01696F;font-size:0.82rem;font-weight:600;margin-bottom:6px;">Select ALL that apply</div>',
-                unsafe_allow_html=True)
-    if locked:
-        for k in keys:
-            icon="☑" if k in cur else "☐"
-            color="#01696F" if k in cur else "#6B7280"
-            st.markdown(f'<div style="padding:4px 0;color:{color};">{icon} <b>{k}.</b> {opts[k]}</div>',
-                        unsafe_allow_html=True)
-    else:
-        sel = st.multiselect("",keys,default=cur,
-                             format_func=lambda k:f"{k}.  {opts[k]}",
-                             key=f"sata_{qid}",label_visibility="collapsed")
-        st.session_state.answers[qid] = sel
+    questions = st.session_state.get("active_questions", [])
+    cur_idx   = st.session_state.get("current_q", 0)
 
-def render_bowtie(q, qid, locked):
-    """
-    True NCLEX bowtie visual:
-      [Actions to Take panel] → ◇ Condition ◇ → [Parameters to Monitor panel]
-    Each side uses a multiselect (select 2); center uses radio (select 1).
-    Backward-compatible: also reads old cause/action/outcome keys.
-    """
-    bt   = q["bowtie"]
-    # Support both new keys (condition_options/actions_to_take/parameters_to_monitor)
-    # and old keys (causes/actions/outcomes) for backward compatibility
-    c_opts = bt.get("condition_options") or bt.get("causes", [])
-    a_opts = bt.get("actions_to_take")   or bt.get("actions", [])
-    p_opts = bt.get("parameters_to_monitor") or bt.get("outcomes", [])
-    cur    = st.session_state.answers.get(qid,{})
+    if not questions:
+        st.warning("No questions loaded.")
+        if st.button("← Home"):
+            st.session_state.screen = "home"
+            st.rerun()
+        return
 
-    st.markdown('<div class="type-banner banner-bowtie">Bowtie — Select the <strong>condition</strong> (center), <strong>2 actions to take</strong> (left), and <strong>2 parameters to monitor</strong> (right).</div>',
-                unsafe_allow_html=True)
-
-    # ── Three columns with arrow connectors ──
-    col_a, col_arr1, col_c, col_arr2, col_p = st.columns([5, 1, 4, 1, 5])
-
-    # Left: Actions to Take
-    with col_a:
-        st.markdown('<div style="background:#F8FAFC;border:1px solid #CBD5E1;border-radius:8px;padding:12px;">'
-                    '<div class="bt-header">Actions to Take</div>', unsafe_allow_html=True)
-        st.markdown('<div style="font-size:0.78rem;color:#9CA3AF;margin-bottom:6px;">Select 2</div>',
-                    unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        if locked:
-            chosen_a = cur.get("actions",[])
-            for opt in a_opts:
-                sel = opt in chosen_a
-                icon = "☑" if sel else "☐"
-                color = "#01696F" if sel else "#6B7280"
-                st.markdown(f'<div style="padding:3px 0;font-size:0.87rem;color:{color};">{icon} {opt}</div>',
-                            unsafe_allow_html=True)
-        else:
-            chosen_a = st.multiselect("", a_opts, default=cur.get("actions",[]),
-                                      key=f"bt_a_{qid}", label_visibility="collapsed",
-                                      max_selections=2)
-            cur["actions"] = chosen_a
-            st.session_state.answers[qid] = cur
-
-    # Arrow 1
-    with col_arr1:
-        st.markdown('<div style="text-align:center;padding-top:60px;font-size:1.6rem;color:#94A3B8;">→</div>',
-                    unsafe_allow_html=True)
-
-    # Center: Condition
-    with col_c:
-        st.markdown('<div style="background:#FFFBEB;border:2px solid #F59E0B;border-radius:8px;padding:12px;">'
-                    '<div class="bt-center-header" style="text-align:center;">Condition Most Likely Experiencing</div>',
-                    unsafe_allow_html=True)
-        st.markdown('<div style="font-size:0.78rem;color:#B45309;margin-bottom:6px;text-align:center;">Select 1</div>',
-                    unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        if locked:
-            chosen_c = cur.get("condition","")
-            for opt in c_opts:
-                icon = "◉" if opt==chosen_c else "○"
-                color = "#92400E" if opt==chosen_c else "#6B7280"
-                st.markdown(f'<div style="padding:3px 0;font-size:0.87rem;color:{color};">{icon} {opt}</div>',
-                            unsafe_allow_html=True)
-        else:
-            idx_d = c_opts.index(cur["condition"]) if cur.get("condition") in c_opts else None
-            chosen_c = st.radio("", c_opts, index=idx_d,
-                                key=f"bt_c_{qid}", label_visibility="collapsed")
-            cur["condition"] = chosen_c
-            st.session_state.answers[qid] = cur
-
-    # Arrow 2
-    with col_arr2:
-        st.markdown('<div style="text-align:center;padding-top:60px;font-size:1.6rem;color:#94A3B8;">→</div>',
-                    unsafe_allow_html=True)
-
-    # Right: Parameters to Monitor
-    with col_p:
-        st.markdown('<div style="background:#F8FAFC;border:1px solid #CBD5E1;border-radius:8px;padding:12px;">'
-                    '<div class="bt-header">Parameters to Monitor</div>', unsafe_allow_html=True)
-        st.markdown('<div style="font-size:0.78rem;color:#9CA3AF;margin-bottom:6px;">Select 2</div>',
-                    unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        if locked:
-            chosen_p = cur.get("parameters",[])
-            for opt in p_opts:
-                sel = opt in chosen_p
-                icon = "☑" if sel else "☐"
-                color = "#065F46" if sel else "#6B7280"
-                st.markdown(f'<div style="padding:3px 0;font-size:0.87rem;color:{color};">{icon} {opt}</div>',
-                            unsafe_allow_html=True)
-        else:
-            chosen_p = st.multiselect("", p_opts, default=cur.get("parameters",[]),
-                                      key=f"bt_p_{qid}", label_visibility="collapsed",
-                                      max_selections=2)
-            cur["parameters"] = chosen_p
-            st.session_state.answers[qid] = cur
-
-def render_matrix(q, qid, locked):
-    """
-    Matrix: proper aligned table using st.columns so headers stay above checkboxes.
-    One radio-group per row (only one can be selected per row).
-    """
-    rows    = q["matrix"]["rows"]
-    columns = q["matrix"]["columns"]
-    cur     = st.session_state.answers.get(qid,{})
-
-    st.markdown('<div class="type-banner banner-matrix">Matrix Grid — For each finding, select the correct column.</div>',
-                unsafe_allow_html=True)
-
-    # Header row
-    ncols = len(columns)
-    col_widths = [4] + [2]*ncols
-    hcols = st.columns(col_widths)
-    hcols[0].markdown('<div style="font-weight:700;font-size:0.82rem;color:#374151;padding:6px 0;">Assessment Finding</div>',
-                      unsafe_allow_html=True)
-    for i,col_name in enumerate(columns):
-        hcols[i+1].markdown(
-            f'<div style="text-align:center;font-weight:700;font-size:0.82rem;color:#374151;'
-            f'background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;padding:6px 4px;">{col_name}</div>',
+    # Header row: timer + nav indicator
+    h_left, h_mid, h_right = st.columns([3, 4, 3])
+    with h_left:
+        # st.empty() lets the timer update in-place on every 5-second rerun
+        # instead of stacking a new element. Works correctly in both local
+        # and hosted (Render / HuggingFace) deployments.
+        timer_slot = st.empty()
+        auto_submit = render_timer(container=timer_slot)
+    with h_mid:
+        # Progress dots
+        dots = "".join(
+            f'<span style="display:inline-block;width:10px;height:10px;'
+            f'border-radius:50%;margin:0 2px;'
+            f'background:{"#01696F" if i == cur_idx else ("#10B981" if i < cur_idx else "#CBD5E1")};"></span>'
+            for i in range(len(questions)))
+        st.markdown(
+            f'<div style="text-align:center;padding-top:6px;">{dots}</div>',
+            unsafe_allow_html=True)
+    with h_right:
+        n_answered = sum(
+            1 for i, q in enumerate(questions)
+            if is_answered(q, f"{i}_{q.get('id',i)}"))
+        st.markdown(
+            f'<div style="text-align:right;font-size:0.82rem;color:#6B7280;">'
+            f'{n_answered} / {len(questions)} answered</div>',
             unsafe_allow_html=True)
 
-    st.markdown('<div style="height:4px;"></div>', unsafe_allow_html=True)
+    # Auto-submit on timer expiry
+    if auto_submit:
+        time.sleep(0.5)
+        st.session_state.submitted = True
+        st.session_state.screen    = "review"
+        st.rerun()
 
-    # Data rows
-    for row in rows:
-        row_id    = row["id"]
-        row_label = row["label"]
-        dcols     = st.columns(col_widths)
+    st.markdown("---")
 
-        dcols[0].markdown(
-            f'<div style="font-size:0.88rem;padding:6px 0;color:#1E293B;">{row_label}</div>',
-            unsafe_allow_html=True)
+    q   = questions[cur_idx]
+    qid = f"{cur_idx}_{q.get('id', cur_idx)}"
+    qt  = q["type"]
 
-        if locked:
-            chosen = cur.get(row_id,"")
-            for i,col_name in enumerate(columns):
-                selected = chosen==col_name
-                icon = "◉" if selected else "○"
-                color = "#01696F" if selected else "#D1D5DB"
-                dcols[i+1].markdown(
-                    f'<div style="text-align:center;font-size:1.25rem;color:{color};padding:4px 0;">{icon}</div>',
-                    unsafe_allow_html=True)
+    if qid not in st.session_state.answers:
+        st.session_state.answers[qid] = {} if qt in ("BOWTIE","MATRIX","TREND","CLOZE") else []
+
+    # Render question card top
+    render_qcard_top(q, cur_idx, len(questions))
+
+    # Render answer widget
+    locked = False  # test mode — never locked
+    if qt == "MC":
+        render_mc(q, qid, locked)
+    elif qt == "SATA":
+        render_sata(q, qid, locked)
+    elif qt == "BOWTIE":
+        render_bowtie(q, qid, locked)
+    elif qt == "MATRIX":
+        render_matrix(q, qid, locked)
+    elif qt == "TREND":
+        render_trend(q, qid, locked)
+    elif qt == "CLOZE":
+        render_cloze(q, qid, locked)
+
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+    # Navigation buttons
+    nav_l, nav_mid, nav_r = st.columns([2, 4, 2])
+
+    # No going back (framework requirement)
+    with nav_l:
+        pass  # intentionally empty
+
+    with nav_r:
+        answered = is_answered(q, qid)
+        is_last  = (cur_idx == len(questions) - 1)
+
+        if is_last:
+            if st.button("✅ Submit Session",
+                         type="primary", use_container_width=True,
+                         key="btn_submit",
+                         disabled=not answered):
+                st.session_state.submitted = True
+                st.session_state.screen    = "review"
+                st.rerun()
         else:
-            for i,col_name in enumerate(columns):
-                checked = cur.get(row_id)==col_name
-                if dcols[i+1].checkbox("", value=checked,
-                                       key=f"mat_{qid}_{row_id}_{col_name}",
-                                       label_visibility="collapsed"):
-                    cur[row_id] = col_name
-                    st.session_state.answers[qid] = cur
+            if st.button("Next Question →",
+                         type="primary", use_container_width=True,
+                         key="btn_next",
+                         disabled=not answered):
+                st.session_state.current_q += 1
+                st.rerun()
 
-        st.markdown('<div style="height:1px;background:#F3F4F6;margin:2px 0;"></div>',
-                    unsafe_allow_html=True)
-
-def render_trend(q, qid, locked):
-    """
-    Trend: compact data table then inline select per item on same view.
-    """
-    tdata = q["trend"]["data"]
-    tpts  = q["trend"]["timepoints"]
-    items = q["trend"]["items"]
-    cur   = st.session_state.answers.get(qid,{})
-    opts  = ["Improving","Worsening","No change"]
-
-    st.markdown('<div class="type-banner banner-trend">Trend — Review the data, then classify each parameter below.</div>',
+    with nav_mid:
+        if not answered:
+            st.markdown(
+                '<div style="text-align:center;font-size:0.8rem;color:#9CA3AF;">'
+                'Answer this question to continue</div>',
                 unsafe_allow_html=True)
 
-    # Data table (compact)
-    th = "".join(f"<th>{tp}</th>" for tp in tpts)
-    rows_html = ""
-    for row in tdata:
-        cells = ""
-        for i,val in enumerate(row["values"]):
-            cls = ' class="last-val"' if i==len(row["values"])-1 else ""
-            cells += f"<td{cls}>{val}</td>"
-        rows_html += f"<tr><td class='row-label'>{row['label']}</td>{cells}</tr>"
-    st.markdown(
-        f'<div style="overflow-x:auto;"><table class="trend-tbl">'
-        f'<thead><tr><th class="row-header">Parameter</th>{th}</tr></thead>'
-        f'<tbody>{rows_html}</tbody></table></div>',
-        unsafe_allow_html=True)
 
-    # Classification rows — each item on one line: label | selectbox
-    st.markdown('<div style="font-size:0.82rem;font-weight:700;color:#065F46;margin-bottom:6px;">For each item below, select the trend:</div>',
-                unsafe_allow_html=True)
+# ── Review screen ─────────────────────────────────────────────────────────────
+def render_review_screen():
+    questions = st.session_state.get("active_questions", [])
+    answers   = st.session_state.get("answers", {})
+    bank      = st.session_state.get("active_bank", {})
+    layer     = st.session_state.get("active_layer", "All Layers")
 
-    for item in items:
-        iid   = item["id"]
-        label = item["label"]
-        c1,c2 = st.columns([3,2])
-        c1.markdown(
-            f'<div style="font-size:0.9rem;font-weight:600;color:#1E293B;padding-top:6px;">{label}</div>',
-            unsafe_allow_html=True)
-        if locked:
-            val = cur.get(iid,"—")
-            color = "#059669" if val=="Improving" else ("#DC2626" if val=="Worsening" else "#6B7280")
-            c2.markdown(f'<div style="font-size:0.9rem;font-weight:700;color:{color};padding-top:6px;">{val}</div>',
-                        unsafe_allow_html=True)
-        else:
-            idx_d = opts.index(cur[iid]) if cur.get(iid) in opts else None
-            choice = c2.selectbox("", opts, index=idx_d,
-                                  key=f"tr_{qid}_{iid}", label_visibility="collapsed")
-            cur[iid] = choice
-            st.session_state.answers[qid] = cur
+    if not questions:
+        st.warning("No session data.")
+        return
 
-def render_cloze(q, qid, locked):
-    """
-    Cloze: sentence flows inline; each blank shows a compact selectbox on its own line
-    labeled clearly, then continues sentence text.
-    """
-    parts = q["cloze"]["sentence_parts"]
-    cur   = st.session_state.answers.get(qid,{})
+    # ── Grade ──
+    answers_keyed = {}
+    for i, q in enumerate(questions):
+        qid = f"{i}_{q.get('id', i)}"
+        answers_keyed[qid] = answers.get(qid)
 
-    st.markdown('<div class="type-banner banner-cloze">Drop-Down — Select the best answer for each blank to complete the statement.</div>',
-                unsafe_allow_html=True)
+    total_e, total_m, details, layer_stats, type_stats, missed_pairs = \
+        aggregate_results(questions, answers_keyed)
 
-    # Build the sentence as segments; blanks get their own labeled row
-    text_buffer = ""
-    for part in parts:
-        if isinstance(part, str):
-            text_buffer += part
-        elif isinstance(part, dict):
-            bid   = part["blank_id"]
-            bopts = part["options"]
-            blabel = part.get("label", bid)
+    pct = (total_e / total_m * 100) if total_m else 0
 
-            # flush text so far
-            if text_buffer.strip():
-                st.markdown(f'<div class="cloze-text">{text_buffer}</div>', unsafe_allow_html=True)
-                text_buffer = ""
+    # ── Save session once ──
+    if not st.session_state.get("session_saved"):
+        elapsed = int(time.time() - st.session_state.get("start_time", time.time()))
+        save_session(
+            bank_id    = bank.get("id", "default"),
+            bank_title = bank.get("title", ""),
+            layer      = layer,
+            score_pct  = pct,
+            earned     = total_e,
+            max_pts    = total_m,
+            q_count    = len(questions),
+            elapsed_sec= elapsed,
+            miss_details = details,
+        )
+        st.session_state.session_saved = True
 
-            if locked:
-                val = cur.get(bid,"___")
-                st.markdown(f'<div style="margin:4px 0 8px 0;">'
-                            f'<span style="font-size:0.78rem;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">{blabel}: </span>'
-                            f'<span class="blank-placeholder">{val}</span>'
-                            f'</div>', unsafe_allow_html=True)
-            else:
-                idx_d = bopts.index(cur[bid]) if cur.get(bid) in bopts else None
-                c1,c2 = st.columns([1,3])
-                c1.markdown(f'<div style="font-size:0.82rem;font-weight:700;color:#374151;padding-top:8px;">{blabel}:</div>',
-                            unsafe_allow_html=True)
-                choice = c2.selectbox("", bopts, index=idx_d,
-                                      key=f"cz_{qid}_{bid}", label_visibility="collapsed")
-                cur[bid] = choice
-                st.session_state.answers[qid] = cur
+    # ── Score header ──
+    pass_color = "#059669" if pct >= PASSING_PCT else "#EF4444"
+    pass_label = "PASS" if pct >= PASSING_PCT else "BELOW PASSING"
 
-    # flush any remaining text
-    if text_buffer.strip():
-        st.markdown(f'<div class="cloze-text">{text_buffer}</div>', unsafe_allow_html=True)
-
-# ─── HOME ─────────────────────────────────────────────────────────────────────
-def render_home():
-
-    # ── Hero header ──
-    st.markdown("""
-    <div style="background:linear-gradient(135deg,#01696F 0%,#0C4E54 100%);
-                border-radius:12px;padding:26px 30px;margin-bottom:22px;color:white;">
-      <div style="font-size:1.6rem;font-weight:800;margin-bottom:6px;">🏥 NGN NCLEX Simulator</div>
-      <div style="font-size:0.95rem;opacity:0.9;line-height:1.6;">
-        A structured practice system built on the <strong>Master Framework</strong> — the same pipeline used
-        to generate your question banks. Every question in this simulator was built in layers so you build
-        knowledge the right way: facts first, then understanding, then judgment.
-      </div>
+    st.markdown(f"""
+    <div style="background:{'#D1FAE5' if pct>=PASSING_PCT else '#FEE2E2'};
+                border-radius:12px;padding:20px 24px;margin-bottom:18px;">
+        <div style="font-size:0.8rem;font-weight:700;color:{pass_color};
+                    text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">
+            {pass_label}
+        </div>
+        <div style="font-size:2.4rem;font-weight:900;color:{pass_color};
+                    line-height:1;margin-bottom:4px;">
+            {pct:.1f}%
+        </div>
+        <div style="font-size:0.9rem;color:#374151;">
+            {total_e} / {total_m} points · {len(questions)} questions ·
+            Layer: {layer}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── TWO-COLUMN LAYOUT: Framework explanation LEFT, Quick start RIGHT ──
-    left, right = st.columns([3, 2], gap="large")
-
-    with left:
-        # ── THE LAYER SYSTEM ──
-        st.markdown("""
-        <div style="font-size:1.1rem;font-weight:800;color:#111827;margin-bottom:4px;">📚 How the question layers work</div>
-        <div style="font-size:0.83rem;color:#6B7280;margin-bottom:14px;">
-          Every question bank is organized into 6 layers. Each layer builds on the last.
-          If you're new — start at Layer A and work forward. Don't jump to Layer C before you've nailed the facts.
-        </div>
-        """, unsafe_allow_html=True)
-
-        layer_rows = [
-            ("badge-layer-a",  "Layer A",        "Recall Anchors",
-             "Pure fact retrieval — exact numbers, thresholds, timelines, hold parameters. "
-             "No clinical context. Just: what is the fact? "
-             "<em>Target: ≥95% before moving on.</em>"),
-            ("badge-layer-aa", "Layer A-Applied", "Facts in Disguise",
-             "Same Tier-1 facts, but now hidden inside a patient scenario. "
-             "You have to recognize the fact is being tested even though it looks like a judgment question. "
-             "<em>Target: ≥90%.</em>"),
-            ("badge-layer-b",  "Layer B",        "Mechanism / Physiology",
-             "Why does the rule exist? Questions test your understanding of the underlying "
-             "pathophysiology or drug mechanism — not just the rule itself. "
-             "<em>Required before Layer C makes sense.</em>"),
-            ("badge-layer-c",  "Layer C",        "Clinical Judgment (NCLEX Core)",
-             "This is the biggest section (45–50% of questions). Priority, first action, "
-             "complication recognition, teaching evaluation, delegation, medication safety. "
-             "This is what the real NCLEX tests most. <em>Target: ≥90%.</em>"),
-            ("badge-layer-d",  "Layer D",        "Confusable Pairs",
-             "One question per named confusion pair — the things students consistently mix up. "
-             "Built from the Interference Map of your unit. If you miss these, your rationale will tell you exactly "
-             "what the confusion was. <em>Target: ≥85%.</em>"),
-            ("badge-layer-ngn","NGN Module",     "Next Generation NCLEX Formats",
-             "Bowtie, Matrix Grid, Trend, Drop-Down/Cloze — the new item types on the 2026 NCLEX. "
-             "These test clinical judgment across multiple dimensions at once. "
-             "<em>Only attempt after Layer C is solid.</em>"),
-        ]
-        for cls, label, title, desc in layer_rows:
-            st.markdown(
-                f'<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #F3F4F6;align-items:flex-start;">'
-                f'  <div style="min-width:110px;padding-top:2px;">'
-                f'    <span class="badge {cls}" style="white-space:nowrap;">{label}</span>'
-                f'    <div style="font-size:0.72rem;color:#6B7280;margin-top:3px;font-weight:600;">{title}</div>'
-                f'  </div>'
-                f'  <div style="font-size:0.83rem;color:#374151;line-height:1.55;">{desc}</div>'
+    # ── Layer readiness ──
+    if layer_stats:
+        st.markdown("**Layer breakdown:**")
+        cols = st.columns(len(layer_stats))
+        for i, (lyr, (e, m)) in enumerate(layer_stats.items()):
+            lp = (e / m * 100) if m else 0
+            ready, needed = check_layer_readiness(lyr, lp)
+            info  = LAYER_INFO.get(lyr, {})
+            color = "#059669" if ready else "#EF4444"
+            cols[i].markdown(
+                f'<div style="text-align:center;padding:8px;border:1px solid #E5E7EB;'
+                f'border-radius:8px;">'
+                f'<div style="font-size:0.7rem;color:#6B7280;">{info.get("label",lyr)}</div>'
+                f'<div style="font-size:1.1rem;font-weight:800;color:{color};">{lp:.0f}%</div>'
+                f'<div style="font-size:0.68rem;color:{color};">{"✓ Ready" if ready else f"Need {needed}%"}</div>'
                 f'</div>',
                 unsafe_allow_html=True)
 
-        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
-
-        # ── STUDY SCHEDULE ──
-        st.markdown("""
-        <div style="font-size:1.1rem;font-weight:800;color:#111827;margin-bottom:4px;">📅 Recommended study schedule per unit</div>
-        <div style="font-size:0.83rem;color:#6B7280;margin-bottom:12px;">
-          Follow this order for every new unit. Only move to the next layer once you hit the target score.
-        </div>
-        """, unsafe_allow_html=True)
-
-        sched_rows = [
-            ("Day 1",       "badge-layer-a",  "Layer A",         "≥95%", "Drill raw facts until they're instant recall"),
-            ("Day 2",       "badge-layer-aa", "Layer A-Applied",  "≥90%", "Same facts in clinical form — can you still recognize them?"),
-            ("Day 3",       "badge-layer-b",  "Layer B",          "—",    "Understand the why behind every rule"),
-            ("Days 4–5",    "badge-layer-c",  "Layer C",          "≥90%", "Clinical judgment — the biggest section, needs the most reps"),
-            ("Day 6",       "badge-layer-d",  "Layer D",          "≥85%", "Confusable pairs — kill your most dangerous mix-ups"),
-            ("Days 7–8",    "badge-layer-ngn","NGN Module",       "—",    "All NGN item types — bowtie, matrix, trend, cloze"),
-            ("Exam eve",    "badge-layer-c",  "All Layers timed", "≥68%", "Full simulation — mixed, timed, no going back"),
-        ]
-        header = ('<div style="display:grid;grid-template-columns:72px 110px 1fr 44px;'
-                  'gap:8px;padding:6px 8px;background:#F9FAFB;border-radius:6px 6px 0 0;'
-                  'border:1px solid #E5E7EB;font-size:0.72rem;font-weight:700;color:#6B7280;text-transform:uppercase;">'
-                  '<div>When</div><div>Layer</div><div>Goal</div><div>Target</div></div>')
-        st.markdown(header, unsafe_allow_html=True)
-        for i,(day,cls,lbl,target,goal) in enumerate(sched_rows):
-            bg = "#FFFFFF" if i%2==0 else "#F9FAFB"
-            last = "border-radius:0 0 6px 6px;" if i==len(sched_rows)-1 else ""
-            st.markdown(
-                f'<div style="display:grid;grid-template-columns:72px 110px 1fr 44px;'
-                f'gap:8px;padding:7px 8px;background:{bg};border:1px solid #E5E7EB;border-top:none;{last}">'
-                f'  <div style="font-size:0.78rem;font-weight:700;color:#374151;align-self:center;">{day}</div>'
-                f'  <div style="align-self:center;"><span class="badge {cls}" style="white-space:nowrap;font-size:0.67rem;">{lbl}</span></div>'
-                f'  <div style="font-size:0.78rem;color:#374151;align-self:center;">{goal}</div>'
-                f'  <div style="font-size:0.78rem;font-weight:700;color:#01696F;align-self:center;">{target}</div>'
-                f'</div>',
-                unsafe_allow_html=True)
-
-        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
-
-        # ── QUESTION TYPES (collapsed — reference only) ──
-        with st.expander("What are the 6 NGN question formats? (click to expand)"):
-            types = [
-                ("badge-mc",    "Multiple Choice",
-                 "Pick the ONE best answer from 4 options. Classic NCLEX format."),
-                ("badge-sata",  "Select All That Apply (SATA)",
-                 "Pick every correct answer — could be 2, 3, 4, or 5 correct. No hints."),
-                ("badge-bowtie","Bowtie",
-                 "Three-part item: identify the patient's condition (center), select 2 nursing actions (left), "
-                 "select 2 parameters to monitor (right)."),
-                ("badge-matrix","Matrix Grid",
-                 "A table where each row is a clinical finding. You classify each finding into the correct column "
-                 "(e.g. Expected vs. Unexpected vs. Needs follow-up)."),
-                ("badge-trend", "Trend",
-                 "Lab or vital sign data collected over time. Classify each parameter: Improving, Worsening, or No change."),
-                ("badge-cloze", "Drop-Down / Cloze",
-                 "A clinical sentence with blanks. Select the best answer for each blank from a dropdown menu."),
-            ]
-            for cls,name,desc in types:
-                st.markdown(
-                    f'<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;">'
-                    f'<span class="badge {cls}" style="white-space:nowrap;margin-top:2px;">{name}</span>'
-                    f'<span style="font-size:0.84rem;color:#374151;line-height:1.5;">{desc}</span>'
-                    f'</div>', unsafe_allow_html=True)
-
-    with right:
-        # ── HOW TO USE (4 steps) ──
-        st.markdown("""
-        <div style="font-size:1.1rem;font-weight:800;color:#111827;margin-bottom:12px;">▶ How to start a session</div>
-        """, unsafe_allow_html=True)
-        steps = [
-            ("1", "#FEF3C7", "#92400E", "Pick a question bank",
-             "Each bank is one unit of course content (e.g. Unit 4). Select it below, configure settings, then click Start."),
-            ("2", "#EFF6FF", "#1E40AF", "Choose your layer",
-             "Use 'Study focus' to drill one layer at a time, or leave it on 'All Layers' for a full mixed session."),
-            ("3", "#F0FDF4", "#14532D", "Answer — no going back",
-             "Read the scenario, answer every part, click Next. You cannot return to a previous question, just like the real NCLEX."),
-            ("4", "#FDF4FF", "#581C87", "Review your results",
-             "After submitting you get your score, breakdown by layer and question type, and full rationales for every question."),
-        ]
-        for num,bg,fg,title,desc in steps:
-            st.markdown(
-                f'<div style="background:{bg};border-radius:9px;padding:12px 14px;margin-bottom:10px;">'
-                f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'
-                f'<span style="font-size:1.3rem;font-weight:900;color:{fg};line-height:1;">{num}</span>'
-                f'<span style="font-size:0.88rem;font-weight:700;color:{fg};">{title}</span>'
-                f'</div>'
-                f'<div style="font-size:0.8rem;color:#374151;line-height:1.5;">{desc}</div>'
-                f'</div>', unsafe_allow_html=True)
-
-        st.markdown("---")
-
-        # ── SCORING RULES ──
-        st.markdown("""
-        <div style="font-size:1.0rem;font-weight:700;color:#111827;margin-bottom:8px;">📊 Scoring</div>
-        """, unsafe_allow_html=True)
-        scoring = [
-            ("Multiple Choice",      "1 pt — all or nothing"),
-            ("SATA",                 "+1 correct, −1 wrong (partial credit)"),
-            ("Bowtie / Matrix / Trend / Cloze", "1 pt per correct cell"),
-            ("Passing threshold",    "68% (NCLEX standard)"),
-        ]
-        for label, rule in scoring:
-            st.markdown(
-                f'<div style="display:flex;justify-content:space-between;padding:5px 0;'
-                f'border-bottom:1px solid #F3F4F6;font-size:0.82rem;">'
-                f'<span style="color:#6B7280;">{label}</span>'
-                f'<span style="font-weight:600;color:#111827;">{rule}</span>'
-                f'</div>', unsafe_allow_html=True)
-
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
-
-        # ── ADD NEW UNIT TIP ──
-        st.markdown("""
-        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px 14px;">
-          <div style="font-size:0.85rem;font-weight:700;color:#14532D;margin-bottom:4px;">💡 Adding a new unit</div>
-          <div style="font-size:0.8rem;color:#374151;line-height:1.55;">
-            Generate a <code>questions.json</code> for your new unit using the QUESTION_SCHEMA.md as
-            the AI prompt guide. Replace the existing <code>questions.json</code> file — you never
-            need to touch <code>app.py</code>.
-          </div>
+    # ── Interference pair warnings ──
+    if missed_pairs:
+        pairs_str = ", ".join(set(missed_pairs))
+        st.markdown(f"""
+        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;
+                    padding:10px 14px;margin:12px 0;">
+            🔴 <strong>High Priority — Missed interference pairs:</strong> {_html.escape(pairs_str)}<br>
+            <span style="font-size:0.82rem;color:#6B7280;">
+            Review these carefully — they appear on Layer D specifically because students confuse them.</span>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown("### Question-by-Question Review")
 
-    if not BANKS:
-        st.error("No question banks found. Make sure questions.json is in the same folder as app.py.")
-        return
+    for i, (q, earned, max_pts, detail) in enumerate(details):
+        qid    = f"{i}_{q.get('id', i)}"
+        qt     = q["type"]
+        ratio  = earned / max_pts if max_pts else 0
+        banner = ("correct-banner" if ratio == 1
+                  else "partial-banner" if ratio > 0
+                  else "incorrect-banner")
+        label  = ("✓ Correct" if ratio == 1
+                  else f"Partial ({earned}/{max_pts} pts)" if ratio > 0
+                  else "✗ Incorrect")
+        score_color = "#059669" if ratio==1 else ("#D97706" if ratio>0 else "#DC2626")
 
-    # ── Banks + config ──
-    c1, c2 = st.columns([2, 1])
+        with st.expander(
+            f"Q{i+1}. [{label}] {q['text'][:80]}{'…' if len(q['text'])>80 else ''}",
+            expanded=(ratio < 1)):
 
-    with c1:
-        st.markdown("### Available Question Banks")
-        for bid,bank in BANKS.items():
-            tc = {}; lc = {}
-            for q in bank["questions"]:
-                tc[q["type"]] = tc.get(q["type"],0)+1
-                lc[q.get("layer","?")] = lc.get(q.get("layer","?"),0)+1
-            type_pills = "".join(
-                f'<span class="badge {TYPE_BADGE.get(t,("badge-ngn",t))[0]}">{v} {t}</span>'
-                for t,v in tc.items())
-            layer_pills = "".join(
-                f'<span class="badge {LAYER_INFO.get(l,{}).get("cls","badge-ngn")}" style="font-size:0.65rem;">'
-                f'{lc[l]} {LAYER_INFO.get(l,{}).get("label",l)}</span>'
-                for l in ["A","A-Applied","B","C","D","NGN"] if l in lc)
-            total_q = bank["question_count"]
+            # Re-render locked question card
+            render_qcard_top(q, i, len(questions))
+
+            if qt == "MC":
+                render_mc(q, qid, locked=True)
+            elif qt == "SATA":
+                render_sata(q, qid, locked=True)
+            elif qt == "BOWTIE":
+                render_bowtie(q, qid, locked=True)
+            elif qt == "MATRIX":
+                render_matrix(q, qid, locked=True)
+            elif qt == "TREND":
+                render_trend(q, qid, locked=True)
+            elif qt == "CLOZE":
+                render_cloze(q, qid, locked=True)
+
+            # Score line
             st.markdown(
-                f'<div class="qcard" style="padding:1rem 1.4rem;">'
-                f'<div style="font-size:1rem;font-weight:700;color:#111827;">{bank["title"]}</div>'
-                f'<div style="color:#6B7280;font-size:0.82rem;margin:4px 0;">{bank.get("description","")}</div>'
-                f'<div style="margin-top:6px;">{type_pills}</div>'
-                f'<div style="margin-top:4px;">{layer_pills}</div>'
-                f'<div style="color:#9CA3AF;font-size:0.77rem;margin-top:4px;">{total_q} questions total</div>'
-                f'</div>', unsafe_allow_html=True)
-            if st.button(f"▶  Start {bank['title']}", key=f"start_{bid}",
-                         use_container_width=False):
-                start_test(bid,
-                    st.session_state.get(f"qc_{bid}", min(75,total_q)),
-                    st.session_state.get(f"sh_{bid}", True),
-                    st.session_state.get(f"tm_{bid}", 90),
-                    st.session_state.get(f"lay_{bid}", "All Layers"))
-                st.rerun()
+                f'<div style="font-size:0.88rem;font-weight:700;color:{score_color};'
+                f'margin:8px 0;">{label} — {earned}/{max_pts} points</div>',
+                unsafe_allow_html=True)
 
-    with c2:
-        st.markdown("### Session Settings")
-        if BANKS:
-            sel  = st.selectbox("Question bank", list(BANKS.keys()),
-                                format_func=lambda x: BANKS[x]["title"],
-                                help="Which unit do you want to practice?")
-            bank = BANKS[sel]
-
-            avail    = sorted(set(q.get("layer","?") for q in bank["questions"]))
-            lay_opts = ["All Layers — full mixed practice"] + [
-                {"A":"Layer A — Recall facts only",
-                 "A-Applied":"Layer A-Applied — Facts in disguise",
-                 "B":"Layer B — Understand the mechanism",
-                 "C":"Layer C — Clinical judgment (NCLEX core)",
-                 "D":"Layer D — Confusable pairs",
-                 "NGN":"NGN — All NGN format items"}.get(l,l)
-                for l in avail]
-            lay_key_map = {v:k for k,v in zip(["All Layers"]+avail, lay_opts)}
-
-            lay_label = st.selectbox(
-                "Study focus (layer)",
-                lay_opts,
-                help="Pick one layer to drill, or leave on 'All Layers' for a full mixed session.",
-                key=f"lay_label_{sel}")
-            lay_sel = lay_key_map.get(lay_label, "All Layers")
-            st.session_state[f"lay_{sel}"] = lay_sel
-
-            max_q = bank["question_count"] if lay_sel=="All Layers" \
-                else max(1, sum(1 for q in bank["questions"] if q.get("layer")==lay_sel))
-            st.slider("Number of questions", 1, max_q, min(18, max_q), key=f"qc_{sel}",
-                      help="How many questions to include in this session.")
-            st.slider("Time limit (minutes)", 10, 180, 90, step=5, key=f"tm_{sel}",
-                      help="Timer counts down during the test. At 0 it auto-submits.")
-            st.checkbox("Shuffle question order", value=True, key=f"sh_{sel}",
-                        help="Randomize the order so you don't memorize positions.")
-
-# ─── TEST ─────────────────────────────────────────────────────────────────────
-def render_test():
-    qs = st.session_state.questions
-    if not qs: go_home(); st.rerun(); return
-
-    bid   = st.session_state.bank_id
-    bank  = BANKS[bid]
-    idx   = st.session_state.idx
-    total = len(qs)
-    rem   = remaining()
-    tsec  = st.session_state.timer_min*60
-    pct_t = rem/tsec if tsec else 1
-
-    if rem<=0:
-        st.session_state.elapsed=tsec; st.session_state.screen="results"; st.rerun(); return
-
-    q    = qs[idx]
-    qid  = f"{idx}_{q.get('id',idx)}"
-    lock = st.session_state.locked.get(qid,False)
-
-    tcls = "timer"+(" timer-crit" if pct_t<.10 else " timer-warn" if pct_t<.25 else "")
-
-    # Sidebar
-    with st.sidebar:
-        st.markdown(f"## {bank['title']}")
-        st.markdown(f'<div class="{tcls}">⏱ {fmt_time(rem)}</div>', unsafe_allow_html=True)
-        done = len(st.session_state.locked)
-        st.markdown(f"**Q {idx+1} / {total}**")
-        st.markdown(f'<div class="prog-wrap"><div class="prog-fill" style="width:{done/total*100:.1f}%"></div></div>'
-                    f'<div style="color:#9CA3AF;font-size:0.77rem;">{done} answered · {total-done} remaining</div>',
+            # Per-option rationales (MC / SATA)
+            if qt in ("MC", "SATA") and q.get("option_rationales"):
+                st.markdown(
+                    '<div style="font-size:0.8rem;font-weight:700;color:#374151;'
+                    'margin-top:8px;margin-bottom:3px;">Per-Option Rationale:</div>',
                     unsafe_allow_html=True)
-        st.markdown("---")
-        sl = st.session_state.get("study_layer","All Layers")
-        if sl!="All Layers":
-            info = LAYER_INFO.get(sl,{}); st.markdown(f'<span class="badge {info.get("cls","")}">{info.get("label",sl)}</span>', unsafe_allow_html=True)
-        st.markdown("*No going back — just like the real NCLEX.*")
-        st.markdown("---")
-        if st.button("Abandon Test"): go_home(); st.rerun()
-
-    # Unified question card (scenario + stem + meta all in one)
-    render_qcard_top(q, idx, total)
-
-    # Answer area
-    qt = q["type"]
-    if qt=="MC":      render_mc(q, qid, lock)
-    elif qt=="SATA":  render_sata(q, qid, lock)
-    elif qt=="BOWTIE":render_bowtie(q, qid, lock)
-    elif qt=="MATRIX":render_matrix(q, qid, lock)
-    elif qt=="TREND": render_trend(q, qid, lock)
-    elif qt=="CLOZE": render_cloze(q, qid, lock)
-
-    # Navigation
-    st.markdown("<br>", unsafe_allow_html=True)
-    answered = is_answered(q,qid)
-    is_last  = (idx==total-1)
-    btn_lbl  = "Submit Test ✓" if is_last else "Next Question →"
-    c_btn, c_warn = st.columns([2,3])
-    with c_btn:
-        if st.button(btn_lbl, disabled=(not answered and not lock)):
-            if not lock: st.session_state.locked[qid]=True
-            if is_last:
-                st.session_state.elapsed=tsec-rem; st.session_state.screen="results"
-            else:
-                st.session_state.idx+=1
-            st.rerun()
-    with c_warn:
-        if not answered and not lock:
-            st.markdown('<div style="color:#B45309;font-size:0.85rem;padding-top:8px;">⚠️ Answer all parts before continuing</div>',
+                or_map  = q["option_rationales"]
+                correct = set(q.get("correct_answers", []))
+                user    = set(detail.get("user", []))
+                for key in sorted(or_map.keys()):
+                    rat   = or_map[key]
+                    is_c  = key in correct
+                    is_u  = key in user
+                    icon  = "✓" if is_c else "✗"
+                    color = "#059669" if is_c else "#EF4444"
+                    you   = " ← you chose" if is_u else ""
+                    st.markdown(
+                        f'<div style="font-size:0.82rem;padding:3px 0;">'
+                        f'<span style="color:{color};font-weight:700;">{icon} {h(key)}.</span> '
+                        f'{h(rat)}<em style="color:#9CA3AF;">{you}</em></div>',
                         unsafe_allow_html=True)
 
-# ─── RESULTS ─────────────────────────────────────────────────────────────────
-def render_results():
-    qs      = st.session_state.questions
-    bid     = st.session_state.bank_id
-    bank    = BANKS[bid]
-    elapsed = st.session_state.get("elapsed",0)
+            # Cell rationales (MATRIX)
+            # Build id→label map so we show the actual row text, not 'r1','r2' etc.
+            if qt == "MATRIX" and q.get("cell_rationales"):
+                row_label_map = {
+                    row["id"]: row["label"]
+                    for row in q.get("matrix", {}).get("rows", [])
+                }
+                st.markdown(
+                    '<div style="font-size:0.8rem;font-weight:700;color:#374151;'
+                    'margin-top:8px;margin-bottom:3px;">Row Rationale:</div>',
+                    unsafe_allow_html=True)
+                for rid, rat in q["cell_rationales"].items():
+                    display_label = row_label_map.get(rid, rid)  # fallback to id if not found
+                    st.markdown(
+                        f'<div style="font-size:0.82rem;padding:4px 0;color:#374151;'
+                        f'border-bottom:1px solid #F3F4F6;">'
+                        f'<b>{h(display_label)}:</b> {h(rat)}</div>',
+                        unsafe_allow_html=True)
 
-    te=0; tp=0; details=[]
-    for i,q in enumerate(qs):
-        qid  = f"{i}_{q.get('id',i)}"
-        ans  = st.session_state.answers.get(qid)
-        e,p,d= grade_question(q,ans)
-        te+=e; tp+=p; details.append((q,e,p,d))
-
-    pct    = te/tp*100 if tp else 0
-    passed = pct>=68
-
-    # Layer breakdown
-    lstats={}
-    for q,e,p,_ in details:
-        l=q.get("layer","?")
-        if l not in lstats: lstats[l]=[0,0]
-        lstats[l][0]+=e; lstats[l][1]+=p
-
-    with st.sidebar:
-        st.markdown("## Results")
-        st.metric("Score",f"{pct:.1f}%")
-        st.metric("Points",f"{te}/{tp}")
-        st.metric("Time",fmt_time(elapsed))
-        st.markdown("---")
-        st.markdown("**Layer mastery:**")
-        for lyr,(e,p) in sorted(lstats.items()):
-            thr = LAYER_STOP_RULES.get(lyr,68)
-            lp  = e/p*100 if p else 0
-            icon= "✅" if lp>=thr else "⚠️"
-            st.markdown(f"{icon} **{lyr}**: {lp:.0f}% (need {thr}%)")
-        st.markdown("---")
-        if st.button("Try Again"):
-            start_test(bid,len(qs),st.session_state.shuffle,
-                       st.session_state.timer_min,st.session_state.get("study_layer","All Layers"))
-            st.rerun()
-        if st.button("Home"): go_home(); st.rerun()
-
-    p_lbl  = "PASSED ✓" if passed else "NEEDS MORE PRACTICE"
-    p_color= "#059669" if passed else "#DC2626"
-    p_cls  = "score-card score-pass" if passed else "score-card score-fail"
-    st.markdown("## Your Results")
-    st.markdown(f'<div class="{p_cls}"><div class="score-num">{pct:.1f}%</div>'
-                f'<div style="font-size:1rem;font-weight:700;color:{p_color};margin-top:4px;">{p_lbl}</div>'
-                f'<div style="color:#9CA3AF;font-size:0.85rem;margin-top:2px;">{te}/{tp} pts · {fmt_time(elapsed)}</div></div>',
-                unsafe_allow_html=True)
-
-    # Type breakdown
-    tstats={}
-    for q,e,p,_ in details:
-        t=q["type"]
-        if t not in tstats: tstats[t]=[0,0]
-        tstats[t][0]+=e; tstats[t][1]+=p
-    tcols=st.columns(len(tstats))
-    for col,(t,(e,p)) in zip(tcols,tstats.items()):
-        col.metric(t,f"{e}/{p}",f"{e/p*100:.0f}%" if p else "—")
-
-    # Layer mastery grid
-    st.markdown("---")
-    st.markdown("### Layer Mastery")
-    lcols=st.columns(max(1,len(lstats)))
-    for col,(lyr,(e,p)) in zip(lcols,sorted(lstats.items())):
-        thr=LAYER_STOP_RULES.get(lyr,68); lp=e/p*100 if p else 0; met=lp>=thr
-        info=LAYER_INFO.get(lyr,{"label":lyr,"cls":"badge-layer-ngn"})
-        col.markdown(
-            f'<div style="background:#FFF;border:1px solid #E5E7EB;border-radius:8px;padding:12px;text-align:center;">'
-            f'<div class="badge {info["cls"]}">{lyr}</div>'
-            f'<div style="font-size:1.5rem;font-weight:800;color:{"#059669" if met else "#DC2626"};">{lp:.0f}%</div>'
-            f'<div style="font-size:0.75rem;color:#9CA3AF;">Need {thr}% · {"✅ Met" if met else "⚠️ Below"}</div>'
-            f'</div>', unsafe_allow_html=True)
-
-    # Answer review
-    st.markdown("---")
-    st.markdown("### Answer Review & Rationales")
-    filt = st.radio("Show:", ["All","Incorrect / Partial","Full Credit Only"], horizontal=True)
-
-    for i,(q,e,p,d) in enumerate(details):
-        full=(e==p); zero=(e==0)
-        if filt=="Incorrect / Partial" and full: continue
-        if filt=="Full Credit Only" and not full: continue
-
-        icon="✅" if full else ("❌" if zero else "⚠️")
-        qt = q["type"]
-        lyr= q.get("layer","")
-        info=LAYER_INFO.get(lyr,{})
-
-        with st.expander(f"{icon} Q{i+1} [{qt}] — {e}/{p} pts — {q['text'][:72]}..."):
-            # Layer + concept header
-            sub=q.get("layer_subtype",""); concept=q.get("concept_bucket","")
-            st.markdown(
-                f'<span class="badge {info.get("cls","")}">{lyr}</span>'
-                +(f'<span class="badge" style="background:#F1F5F9;color:#64748B;border:1px solid #CBD5E1;">{sub}</span>' if sub else "")
-                +(f'<span class="badge" style="background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0;">{concept}</span>' if concept else ""),
-                unsafe_allow_html=True)
-
-            # NCLEX metadata
-            nc=q.get("nclex_category",""); ns=q.get("nclex_subcategory","")
-            if nc: st.markdown(f'<div style="font-size:0.77rem;color:#9CA3AF;">{nc} › {ns}</div>',unsafe_allow_html=True)
-
-            # Miss type flags
-            mf=q.get("miss_type_flags",[])
-            if mf and not full:
-                flags=" ".join(f'<span style="background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;border-radius:4px;padding:2px 7px;font-size:0.72rem;font-weight:700;">{f}</span>' for f in mf)
-                st.markdown(f'<div style="margin:4px 0;">Watch for: {flags}</div>',unsafe_allow_html=True)
-
-            # Interference pair
-            ip=q.get("interference_pair","")
-            if ip and not full:
-                st.markdown(f'<div style="background:#FDF4FF;border-left:3px solid #A855F7;padding:6px 10px;border-radius:4px;font-size:0.82rem;color:#581C87;margin:6px 0;">⚡ Interference pair: <strong>{ip}</strong> — study both together</div>',unsafe_allow_html=True)
-
-            # Answer breakdown
-            if qt in ("MC","SATA"):
-                opts=q.get("options",{}); correct=d.get("correct",set()); user=d.get("user",set())
-                for k,v in sorted(opts.items()):
-                    c=k in correct; u=k in user
-                    if c and u:   style,pref="background:#F0FDF4;border:1.5px solid #059669;","✅ "
-                    elif c:       style,pref="background:#ECFDF5;border:1.5px solid #059669;","☑ "
-                    elif u:       style,pref="background:#FFF1F2;border:1.5px solid #DC2626;","❌ "
-                    else:         style,pref="background:#F9FAFB;border:1px solid #E5E7EB;",""
-                    st.markdown(f'<div style="{style}border-radius:6px;padding:5px 12px;margin:3px 0;font-size:0.87rem;"><b>{pref}{k}.</b> {v}</div>',unsafe_allow_html=True)
-
-            elif qt=="BOWTIE":
-                c=d.get("correct",{}); u=d.get("user",{})
-                st.markdown(f'**Condition** {"✅" if d.get("condition_ok") else "❌"} — Correct: `{c.get("condition")}` | Yours: `{u.get("condition")}`')
-                st.markdown(f'**Actions to Take** {"✅" if d.get("actions_ok") else "❌"} — Correct: `{c.get("actions")}` | Yours: `{u.get("actions",[])}`')
-                st.markdown(f'**Parameters to Monitor** {"✅" if d.get("parameters_ok") else "❌"} — Correct: `{c.get("parameters")}` | Yours: `{u.get("parameters",[])}`')
-
-            elif qt in ("MATRIX","TREND","CLOZE"):
-                cm=d.get("correct",{}); um=d.get("user",{})
-                for k,cv in cm.items():
-                    uv=um.get(k,"—"); ok=uv==cv
-                    st.markdown(f'{"✅" if ok else "❌"} **{k}** — Correct: `{cv}` | Yours: `{uv}`')
-
-            # Rationale
-            rat=q.get("rationale","")
-            if rat:
-                cls2="rat-ok" if full else "rat-miss"
-                st.markdown(f'<div class="{cls2}"><strong>📝 Rationale:</strong> {rat}</div>',
+            # Bowtie rationales
+            if qt == "BOWTIE" and q.get("bowtie_rationales"):
+                br = q["bowtie_rationales"]
+                st.markdown(
+                    '<div style="font-size:0.8rem;font-weight:700;color:#374151;'
+                    'margin-top:8px;margin-bottom:3px;">Bowtie Rationale:</div>',
+                    unsafe_allow_html=True)
+                for part in ("condition", "actions", "parameters"):
+                    if part in br:
+                        st.markdown(
+                            f'<div style="font-size:0.82rem;padding:2px 0;color:#374151;">'
+                            f'<b style="text-transform:capitalize;">{part}:</b> {h(br[part])}</div>',
                             unsafe_allow_html=True)
 
-# ─── ROUTER ──────────────────────────────────────────────────────────────────
-s = st.session_state.screen
-if s=="home":    render_home()
-elif s=="test":  render_test()
-elif s=="results": render_results()
+            # Overall rationale
+            rationale = q.get("rationale", "")
+            if rationale:
+                source = q.get("source_reference", "")
+                src_html = (f' <span style="color:#9CA3AF;font-style:italic;">'
+                            f'({h(source)})</span>' if source else "")
+                st.markdown(
+                    f'<div style="background:#F0FAFA;border-left:3px solid #01696F;'
+                    f'border-radius:0 6px 6px 0;padding:10px 14px;margin-top:10px;">'
+                    f'<div style="font-size:0.78rem;font-weight:700;color:#01696F;'
+                    f'margin-bottom:4px;">📚 Rationale{src_html}</div>'
+                    f'<div style="font-size:0.85rem;color:#1E293B;line-height:1.6;">'
+                    f'{h(rationale)}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True)
+
+            # Miss-type diagnosis
+            miss_type = detail.get("inferred_miss_type", "")
+            if miss_type and earned < max_pts:
+                explanation = get_miss_explanation(miss_type)
+                st.markdown(
+                    f'<div style="background:#FFFBEB;border:1px solid #FDE68A;'
+                    f'border-radius:6px;padding:8px 12px;margin-top:8px;">'
+                    f'<div style="font-size:0.78rem;font-weight:700;color:#92400E;">'
+                    f'🔎 Inferred Miss Type: {h(miss_type)}</div>'
+                    f'<div style="font-size:0.82rem;color:#78350F;margin-top:3px;">'
+                    f'{h(explanation)}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True)
+
+    st.markdown("---")
+    if st.button("🏠 Back to Home", type="primary", key="btn_review_home"):
+        st.session_state.screen = "home"
+        st.rerun()
+
+
+# ── Progress screen ────────────────────────────────────────────────────────────
+def render_progress_screen(banks):
+    st.markdown("## Progress History")
+
+    all_sessions = get_session_history(limit=50)
+    if not all_sessions:
+        st.info("No sessions recorded yet. Complete your first practice session to see progress here.")
+        return
+
+    # Session table
+    import pandas as pd
+    rows = []
+    for s in all_sessions:
+        rows.append({
+            "Date": s["ts"][:10],
+            "Bank": s["bank_title"] or s["bank_id"],
+            "Layer": s["layer"] or "All",
+            "Score": f"{s['score_pct']:.1f}%",
+            "Earned": f"{s['earned']}/{s['max_pts']}",
+            "Questions": s["q_count"],
+            "Time (min)": f"{s['elapsed_sec']//60}" if s['elapsed_sec'] else "—",
+        })
+    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+    # Per-bank mastery
+    if banks:
+        st.markdown("### Layer Mastery by Bank")
+        for bank in banks:
+            bid     = bank.get("id","")
+            title   = bank.get("title", bid)
+            mastery = get_layer_mastery_summary(bid)
+            if mastery:
+                st.markdown(f"**{title}**")
+                mcols = st.columns(len(LAYER_ORDER))
+                for i, lyr in enumerate(LAYER_ORDER):
+                    d = mastery.get(lyr, {})
+                    if not d:
+                        mcols[i].markdown(
+                            f'<div style="text-align:center;">'
+                            f'<div style="font-size:0.7rem;color:#9CA3AF;">'
+                            f'{LAYER_INFO[lyr]["label"]}</div>'
+                            f'<div style="color:#E5E7EB;">—</div></div>',
+                            unsafe_allow_html=True)
+                    else:
+                        lp    = d["last_pct"]
+                        ready = d["is_mastered"]
+                        color = "#059669" if ready else "#EF4444"
+                        mcols[i].markdown(
+                            f'<div style="text-align:center;border:1px solid #E5E7EB;'
+                            f'border-radius:8px;padding:6px 2px;">'
+                            f'<div style="font-size:0.68rem;color:#6B7280;">'
+                            f'{LAYER_INFO[lyr]["label"]}</div>'
+                            f'<div style="font-size:1.1rem;font-weight:800;color:{color};">'
+                            f'{lp:.0f}%</div>'
+                            f'<div style="font-size:0.65rem;color:{color};">'
+                            f'{"✓" if ready else "✗"} {d["session_count"]} sessions</div>'
+                            f'</div>',
+                            unsafe_allow_html=True)
+
+                # Priority pairs
+                pairs = get_priority_pairs(bid)
+                if pairs:
+                    st.markdown("**High-miss interference pairs:**")
+                    for p in pairs[:5]:
+                        st.markdown(
+                            f'<div style="font-size:0.82rem;color:#EF4444;font-weight:600;">'
+                            f'⚠ {h(p["pair_name"])} — missed {p["miss_count"]} time{"s" if p["miss_count"]!=1 else ""}</div>',
+                            unsafe_allow_html=True)
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+def main():
+    inject_css()
+    banks, errors = load_banks()
+    render_sidebar(banks, errors)
+
+    if "screen" not in st.session_state:
+        st.session_state.screen = "home"
+
+    screen = st.session_state.screen
+
+    if screen == "home":
+        render_home(banks)
+    elif screen == "test":
+        render_test_screen()
+    elif screen == "review":
+        render_review_screen()
+    elif screen == "progress":
+        render_progress_screen(banks)
+    else:
+        st.session_state.screen = "home"
+        st.rerun()
+
+
+if __name__ == "__main__":
+    main()

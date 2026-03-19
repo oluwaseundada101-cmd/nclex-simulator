@@ -1,49 +1,35 @@
 @echo off
-title NGN NCLEX Simulator — Local Launcher
-color 0A
-
 echo ==========================================
-echo   NGN NCLEX Simulator — Local Launcher
+echo   NGN NCLEX Simulator v4 - Quick Launch
 echo ==========================================
 echo.
 
-:: Check if Python is installed
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo ERROR: Python is not installed or not in PATH.
-    echo.
-    echo Please install Python 3.11 from:
-    echo https://www.python.org/downloads/release/python-3119/
-    echo.
-    echo IMPORTANT: During install, check the box that says
-    echo "Add Python to PATH" before clicking Install.
-    echo.
-    pause
-    exit
+REM Check if venv exists
+IF NOT EXIST "venv\" (
+    echo Creating virtual environment...
+    python -m venv venv
+    IF %ERRORLEVEL% NEQ 0 (
+        echo ERROR: Python not found or virtual environment failed.
+        echo Make sure Python 3.11 is installed from https://www.python.org/downloads/
+        pause
+        exit /b 1
+    )
 )
 
-echo Python found. Checking for Streamlit...
-echo.
+REM Activate venv
+echo Activating virtual environment...
+call venv\Scripts\activate.bat
 
-:: Install/upgrade streamlit if not present
-pip show streamlit >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Installing Streamlit for the first time...
-    echo This will take about 1-2 minutes on the first run.
-    echo.
-    pip install streamlit==1.40.2
-)
+REM Install/upgrade requirements
+echo Installing requirements...
+pip install -r requirements.txt --quiet
 
+REM Launch app
 echo.
-echo ==========================================
-echo  Starting your NCLEX Simulator...
-echo  Your browser will open automatically.
-echo  To stop: close this window or press Ctrl+C
-echo ==========================================
+echo Starting NGN NCLEX Simulator...
+echo Open your browser to: http://localhost:8501
+echo Press Ctrl+C to stop.
 echo.
-
-:: Run the app — looks for app.py in the same folder as this .bat file
-cd /d "%~dp0"
-python -m streamlit run app.py --server.headless false --browser.gatherUsageStats false
+streamlit run app.py
 
 pause

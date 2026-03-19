@@ -1,643 +1,633 @@
-[
-  {
-    "id": "unit4_hciiia",
-    "title": "Unit 4 HCIIIA — All NGN Types",
-    "description": "GI, Meningitis, Shingles, BPH, Peritonitis, Crohn's, UC — NGN format",
-    "question_count": 18,
-    "questions": [
+{
+  "id": "unit4-hciiia-v4",
+  "title": "Unit 4 HCIIIA — Mastery Bank",
+  "description": "BPH/TURP, Prazosin, Finasteride, Appendicitis, Peritonitis, TPN/Enteral, GI conditions. All 6 NGN formats, all 6 layers.",
+  "version": "4.0",
+  "questions": [
 
-      {
-        "id": "mc_001",
-        "type": "MC",
-        "ngn": false,
-        "layer": "C",
-        "layer_subtype": "priority/first action",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Reduction of Risk Potential",
-        "concept_bucket": "Bowel Obstruction",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Wrong priority schema", "Distractor trap"],
-        "text": "A nurse is caring for a client with a bowel obstruction. Which nursing action is the highest priority?",
-        "options": {
-          "A": "Ambulate the client in the hallway twice per day",
-          "B": "Insert and maintain a nasogastric tube for decompression",
-          "C": "Administer stool softeners as ordered",
-          "D": "Encourage oral fluids to prevent dehydration"
-        },
-        "correct_answers": ["B"],
-        "rationale": "Inserting an NG tube for decompression is the priority — it relieves pressure from the obstruction and prevents further complications including perforation. Oral fluids and ambulation are contraindicated with active obstruction."
+    {
+      "id": "u4-a-001",
+      "type": "MC",
+      "layer": "A",
+      "layer_subtype": "Recall — Formula",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Fluid and Electrolyte Management",
+      "concept_bucket": "CBI Output Calculation",
+      "text": "A nurse is caring for a patient post-TURP with continuous bladder irrigation (CBI). The drainage bag reads 3,600 mL. The nurse has infused 3,100 mL of irrigation solution. What is the patient's TRUE urine output?",
+      "options": {
+        "A": "3,600 mL",
+        "B": "500 mL",
+        "C": "3,100 mL",
+        "D": "6,700 mL"
       },
-
-      {
-        "id": "sata_001",
-        "type": "SATA",
-        "ngn": false,
-        "layer": "C",
-        "layer_subtype": "teaching-content",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Basic Care and Comfort",
-        "concept_bucket": "Crohn's Disease",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Distractor trap", "Translation failure"],
-        "text": "A client newly diagnosed with Crohn's disease asks the nurse what foods commonly trigger flares. Which foods should the nurse instruct the client to avoid? Select all that apply.",
-        "options": {
-          "A": "Raw vegetables and high-fiber foods",
-          "B": "Carbonated beverages",
-          "C": "Oatmeal with water",
-          "D": "Spicy foods",
-          "E": "Dairy products",
-          "F": "Poached chicken breast"
-        },
-        "correct_answers": ["A", "B", "D", "E"],
-        "rationale": "High-fiber, raw foods, carbonated beverages, spicy foods, and dairy commonly worsen Crohn's symptoms. Oatmeal (bland, soluble fiber) and lean poultry are generally well tolerated."
-      },
-
-      {
-        "id": "bowtie_001",
-        "type": "BOWTIE",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "bowtie",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Reduction of Risk Potential",
-        "concept_bucket": "BPH / Acute Urinary Retention",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Distractor trap", "Wrong priority schema"],
-        "case_study": "A 72-year-old male with a history of BPH presents to the ED with inability to void for 14 hours, suprapubic pain rated 8/10, a palpable bladder to the umbilicus, and BP 158/94 mmHg. He reports his symptoms have been worsening over the past 3 days with increased straining and a weak urine stream.",
-        "text": "Complete the bowtie diagram. Select the most likely condition causing the client's presentation, the TWO priority nursing actions to take, and the TWO parameters to monitor after interventions are initiated.",
-        "bowtie": {
-          "condition_options": [
-            "Urinary tract infection with urosepsis",
-            "Acute urinary retention secondary to BPH",
-            "Renal calculi causing bilateral ureteral obstruction",
-            "Neurogenic bladder from new spinal cord injury",
-            "Overactive bladder with urge incontinence"
-          ],
-          "actions_to_take": [
-            "Insert an indwelling urinary catheter (14–16 Fr) to drain the bladder",
-            "Administer IV furosemide to force diuresis",
-            "Notify the provider and prepare for catheterization",
-            "Place client in Trendelenburg position",
-            "Obtain a urine culture and start empiric antibiotics"
-          ],
-          "parameters_to_monitor": [
-            "Urine output volume and color post-catheterization",
-            "Serum creatinine and BUN for renal function",
-            "Blood pressure trend after bladder decompression",
-            "Post-void residual volume",
-            "Hemoglobin and hematocrit"
-          ]
-        },
-        "correct_answers": {
-          "condition": "Acute urinary retention secondary to BPH",
-          "actions": [
-            "Insert an indwelling urinary catheter (14–16 Fr) to drain the bladder",
-            "Notify the provider and prepare for catheterization"
-          ],
-          "parameters": [
-            "Urine output volume and color post-catheterization",
-            "Blood pressure trend after bladder decompression"
-          ]
-        },
-        "rationale": "The classic presentation of acute urinary retention in BPH: 14-hour anuria, suprapubic pain, palpable bladder. Priority actions are notifying the provider and inserting a urethral catheter. Furosemide does not address mechanical obstruction. Monitor urine output and BP after decompression — post-obstructive diuresis and hypotension are known complications."
-      },
-
-      {
-        "id": "matrix_001",
-        "type": "MATRIX",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "matrix grid",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Reduction of Risk Potential",
-        "concept_bucket": "Meningitis",
-        "tier1_fact": null,
-        "interference_pair": "Bacterial Meningitis vs Viral Meningitis",
-        "miss_type_flags": ["Distractor trap", "Translation failure"],
-        "case_study": "A 34-year-old female is admitted with a 3-day history of fever (103.1°F), severe headache, neck stiffness, photophobia, and a petechial rash on her trunk and extremities. CSF analysis shows cloudy fluid, WBC 4,800/mm³ (neutrophil predominant), protein 180 mg/dL, glucose 28 mg/dL. Blood cultures are pending.",
-        "text": "For each assessment finding below, indicate whether the finding is consistent with Bacterial Meningitis, Viral Meningitis, or Both.",
-        "matrix": {
-          "columns": ["Bacterial Meningitis Only", "Viral Meningitis Only", "Both"],
-          "rows": [
-            {"id": "r1", "label": "Severe headache and photophobia"},
-            {"id": "r2", "label": "Petechial / purpuric rash"},
-            {"id": "r3", "label": "CSF WBC >1000 with neutrophil predominance"},
-            {"id": "r4", "label": "Nuchal rigidity (stiff neck)"},
-            {"id": "r5", "label": "CSF glucose <45 mg/dL"},
-            {"id": "r6", "label": "Positive Kernig's and Brudzinski's signs"}
-          ]
-        },
-        "correct_answers": {
-          "r1": "Both",
-          "r2": "Bacterial Meningitis Only",
-          "r3": "Bacterial Meningitis Only",
-          "r4": "Both",
-          "r5": "Bacterial Meningitis Only",
-          "r6": "Both"
-        },
-        "rationale": "Petechial rash is specific to meningococcal (bacterial) meningitis. Neutrophilic pleocytosis >1000 and low CSF glucose are hallmarks of bacterial infection. Headache, nuchal rigidity, and meningeal signs (Kernig's, Brudzinski's) occur in both types."
-      },
-
-      {
-        "id": "trend_001",
-        "type": "TREND",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "trend",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Physiological Adaptation",
-        "concept_bucket": "Post-Op Sepsis",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Stem misread", "Wrong priority schema"],
-        "case_study": "A 58-year-old male post-laparoscopic appendectomy (Day 2) is being monitored by the nurse. The following data has been collected over the shift.",
-        "text": "Review the client's assessment data over time. For each parameter, indicate whether the trend is Improving, Worsening, or No change.",
-        "trend": {
-          "timepoints": ["0800", "1200", "1600"],
-          "data": [
-            {"label": "Temperature (°F)", "values": ["101.8", "102.4", "103.1"]},
-            {"label": "Heart Rate (bpm)", "values": ["98", "104", "116"]},
-            {"label": "BP (mmHg)", "values": ["122/78", "118/74", "102/64"]},
-            {"label": "Urine Output (mL/hr)", "values": ["48", "32", "18"]},
-            {"label": "Pain (0–10)", "values": ["6", "5", "4"]},
-            {"label": "WBC (×10³/mm³)", "values": ["14.2", "16.8", "21.4"]}
-          ],
-          "items": [
-            {"id": "temp",  "label": "Temperature"},
-            {"id": "hr",    "label": "Heart Rate"},
-            {"id": "bp",    "label": "Blood Pressure"},
-            {"id": "uo",    "label": "Urine Output"},
-            {"id": "pain",  "label": "Pain Level"},
-            {"id": "wbc",   "label": "WBC Count"}
-          ]
-        },
-        "correct_answers": {
-          "temp":  "Worsening",
-          "hr":    "Worsening",
-          "bp":    "Worsening",
-          "uo":    "Worsening",
-          "pain":  "Improving",
-          "wbc":   "Worsening"
-        },
-        "rationale": "This client is showing signs of developing sepsis — rising fever, tachycardia, hypotension, oliguria, and a markedly rising WBC all indicate worsening systemic infection. Only pain is improving. This constellation requires immediate provider notification and sepsis protocol activation."
-      },
-
-      {
-        "id": "cloze_001",
-        "type": "CLOZE",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "drop-down/cloze",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Pharmacological and Parenteral Therapies",
-        "concept_bucket": "GERD / PPI Therapy",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Fact gap", "Translation failure"],
-        "case_study": "A client with a history of GERD has been prescribed omeprazole 20 mg PO daily. The nurse is completing discharge teaching.",
-        "text": "Complete the nurse's discharge teaching statement by selecting the best option for each blank.",
-        "cloze": {
-          "sentence_parts": [
-            "The nurse instructs the client to take omeprazole ",
-            {"blank_id": "b1", "label": "Timing", "options": ["with food to reduce nausea", "30 minutes before the first meal of the day", "at bedtime to reduce overnight acid", "with antacids to enhance absorption"]},
-            ". The nurse explains that long-term use of this medication increases the risk of ",
-            {"blank_id": "b2", "label": "Risk", "options": ["hyperkalemia and fluid retention", "hypomagnesemia and vitamin B12 deficiency", "hypercalcemia and kidney stones", "iron toxicity and hemolysis"]},
-            ". If the client develops severe diarrhea with cramping and mucus, the nurse should suspect ",
-            {"blank_id": "b3", "label": "Complication", "options": ["GERD rebound hypersecretion", "Clostridium difficile colitis", "small bowel obstruction", "acute pancreatitis"]},
-            " and notify the provider immediately."
-          ]
-        },
-        "correct_answers": {
-          "b1": "30 minutes before the first meal of the day",
-          "b2": "hypomagnesemia and vitamin B12 deficiency",
-          "b3": "Clostridium difficile colitis"
-        },
-        "rationale": "PPIs must be taken 30 min before meals to inhibit active proton pumps. Long-term PPI use depletes magnesium and B12. C. difficile is a well-established complication of PPI use due to altered gastric pH allowing colonization."
-      },
-
-      {
-        "id": "mc_002",
-        "type": "MC",
-        "ngn": false,
-        "layer": "A",
-        "layer_subtype": "recall",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Basic Care and Comfort",
-        "concept_bucket": "Peritonitis",
-        "tier1_fact": "Semi-Fowler's position is used in peritonitis to promote drainage and lung expansion",
-        "interference_pair": null,
-        "miss_type_flags": ["Fact gap", "Distractor trap"],
-        "text": "The nurse is caring for a client with peritonitis. Which position is most appropriate?",
-        "options": {
-          "A": "Prone position to reduce abdominal pressure",
-          "B": "Trendelenburg to improve venous return",
-          "C": "Semi-Fowler's to promote drainage and lung expansion",
-          "D": "Supine with legs elevated to prevent shock"
-        },
-        "correct_answers": ["C"],
-        "rationale": "Semi-Fowler's position promotes downward drainage of peritoneal fluid to the pelvis and facilitates lung expansion. The prone and Trendelenburg positions are contraindicated in peritonitis."
-      },
-
-      {
-        "id": "sata_002",
-        "type": "SATA",
-        "ngn": false,
-        "layer": "C",
-        "layer_subtype": "complication/escalation",
-        "nclex_category": "Safe and Effective Care Environment",
-        "nclex_subcategory": "Safety and Infection Control",
-        "concept_bucket": "Shingles (Herpes Zoster)",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Distractor trap", "Fact gap"],
-        "text": "A client is admitted with shingles (herpes zoster). Which nursing interventions are appropriate? Select all that apply.",
-        "options": {
-          "A": "Implement Airborne AND Contact precautions until lesions are fully crusted",
-          "B": "Administer acyclovir as prescribed within 72 hours of rash onset",
-          "C": "Educate the client that they can spread shingles to others",
-          "D": "Apply cool compresses and calamine lotion for comfort",
-          "E": "Place the client in a positive-pressure isolation room",
-          "F": "Assess for involvement of the eye (herpes zoster ophthalmicus)"
-        },
-        "correct_answers": ["A", "B", "D", "F"],
-        "rationale": "Shingles requires Airborne + Contact precautions. Antivirals must be started within 72 hours. Comfort measures include cool compresses. Ophthalmic involvement is a serious complication requiring immediate ophthalmology consult. The client transmits chickenpox (not shingles) to susceptible contacts, and isolation rooms for shingles are negative pressure (not positive)."
-      },
-
-      {
-        "id": "bowtie_002",
-        "type": "BOWTIE",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "bowtie",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Physiological Adaptation",
-        "concept_bucket": "Crohn's Disease / Perianal Fistula",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Distractor trap", "Wrong priority schema"],
-        "case_study": "A 28-year-old female with a 5-year history of Crohn's disease presents with a 3-week history of perianal pain, purulent drainage from a perianal opening, fever of 101.4°F, and elevated WBC of 17,200/mm³. She reports her Crohn's has been poorly controlled. CT scan confirms a perianal fistula with adjacent abscess.",
-        "text": "Complete the bowtie. Select the most likely condition, TWO priority nursing actions to take, and TWO parameters to monitor with proper management.",
-        "bowtie": {
-          "condition_options": [
-            "Hemorrhoids complicated by thrombosis",
-            "Perianal fistula with abscess formation secondary to Crohn's disease",
-            "Anal fissure from chronic constipation",
-            "Rectal prolapse from repeated straining",
-            "Clostridium difficile colitis with perirectal involvement"
-          ],
-          "actions_to_take": [
-            "Apply a heating pad to the perianal area for pain relief",
-            "Monitor and protect perianal skin from fistula drainage using barrier cream",
-            "Administer prescribed antibiotics (metronidazole/ciprofloxacin) and biologic agents",
-            "Encourage high-fiber diet to harden stools",
-            "Prepare client for surgical drainage/fistulotomy as ordered"
-          ],
-          "parameters_to_monitor": [
-            "Amount and character of fistula drainage",
-            "Temperature and WBC trend",
-            "Skin integrity of the perianal area",
-            "Serum albumin and nutritional status",
-            "Stool frequency and consistency"
-          ]
-        },
-        "correct_answers": {
-          "condition": "Perianal fistula with abscess formation secondary to Crohn's disease",
-          "actions": [
-            "Monitor and protect perianal skin from fistula drainage using barrier cream",
-            "Administer prescribed antibiotics (metronidazole/ciprofloxacin) and biologic agents"
-          ],
-          "parameters": [
-            "Amount and character of fistula drainage",
-            "Temperature and WBC trend"
-          ]
-        },
-        "rationale": "Crohn's disease classically causes transmural inflammation leading to fistula and abscess formation. Priority nursing actions are skin protection (fistula drainage is enzymatically destructive) and administering antibiotics/biologics. Monitor drainage character and infection markers to evaluate treatment response."
-      },
-
-      {
-        "id": "matrix_002",
-        "type": "MATRIX",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "matrix grid",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Pharmacological and Parenteral Therapies",
-        "concept_bucket": "GI Drug Safety",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Fact gap", "Distractor trap"],
-        "case_study": "The nurse is reviewing medications for clients on the GI unit.",
-        "text": "For each medication listed, indicate the correct nursing priority action.",
-        "matrix": {
-          "columns": ["Give as ordered", "Hold — notify provider", "Give but monitor closely"],
-          "rows": [
-            {"id": "r1", "label": "Metronidazole — client reports tingling in hands/feet"},
-            {"id": "r2", "label": "Loperamide — client has fever 102°F and bloody diarrhea"},
-            {"id": "r3", "label": "Mesalamine (extended-release) — client requests it crushed"},
-            {"id": "r4", "label": "Ciprofloxacin — client took calcium supplement 30 min ago"},
-            {"id": "r5", "label": "Omeprazole — client's magnesium is 1.6 mEq/L (low normal)"}
-          ]
-        },
-        "correct_answers": {
-          "r1": "Hold — notify provider",
-          "r2": "Hold — notify provider",
-          "r3": "Hold — notify provider",
-          "r4": "Hold — notify provider",
-          "r5": "Give but monitor closely"
-        },
-        "rationale": "Metronidazole peripheral neuropathy = hold. Loperamide with infectious diarrhea = absolute contraindication. Extended-release tablets cannot be crushed (releases entire dose at once). Ciprofloxacin binds calcium = absorption impaired, delay dose. PPI with low-normal magnesium = give but monitor trend."
-      },
-
-      {
-        "id": "trend_002",
-        "type": "TREND",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "trend",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Physiological Adaptation",
-        "concept_bucket": "Meningitis",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Stem misread", "Translation failure"],
-        "case_study": "A 19-year-old male is admitted for bacterial meningitis. He is receiving ceftriaxone IV and dexamethasone. The nurse reviews data from the past 18 hours.",
-        "text": "For each parameter, select whether the trend indicates Improving, Worsening, or No change.",
-        "trend": {
-          "timepoints": ["Admission", "6 hours", "18 hours"],
-          "data": [
-            {"label": "Temperature (°F)", "values": ["104.2", "103.0", "101.1"]},
-            {"label": "GCS Score (3–15)", "values": ["10", "12", "14"]},
-            {"label": "Neck stiffness (scale 0–3)", "values": ["3", "2", "1"]},
-            {"label": "Headache (0–10)", "values": ["9", "7", "5"]},
-            {"label": "BP (mmHg)", "values": ["88/52", "96/60", "108/70"]},
-            {"label": "Petechial rash spread", "values": ["Trunk only", "Trunk + arms", "Trunk + arms"]}
-          ],
-          "items": [
-            {"id": "temp",  "label": "Temperature"},
-            {"id": "gcs",   "label": "Level of consciousness (GCS)"},
-            {"id": "neck",  "label": "Neck stiffness"},
-            {"id": "ha",    "label": "Headache severity"},
-            {"id": "bp",    "label": "Blood pressure"},
-            {"id": "rash",  "label": "Petechial rash spread"}
-          ]
-        },
-        "correct_answers": {
-          "temp":  "Improving",
-          "gcs":   "Improving",
-          "neck":  "Improving",
-          "ha":    "Improving",
-          "bp":    "Improving",
-          "rash":  "No change"
-        },
-        "rationale": "Antibiotics and dexamethasone are working — fever, GCS, meningeal signs, and hemodynamics are all improving. The rash spread from admission to 6 hours but stabilized — representing 'no change' in the most recent interval, which is what trend questions assess."
-      },
-
-      {
-        "id": "cloze_002",
-        "type": "CLOZE",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "drop-down/cloze",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Reduction of Risk Potential",
-        "concept_bucket": "BPH / Post-TURP Care",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Stem misread", "Fact gap"],
-        "case_study": "A post-operative client following a TURP (transurethral resection of the prostate) has a 3-way urinary catheter with continuous bladder irrigation (CBI) running at 200 mL/hr. At 0800, the nurse notes the drainage bag contains 1,400 mL of pink-tinged fluid. At 1200, total drainage is 2,600 mL. The irrigation infused during this period was 800 mL.",
-        "text": "Complete the nursing documentation by selecting the correct values for each blank.",
-        "cloze": {
-          "sentence_parts": [
-            "During the 4-hour period from 0800 to 1200, the total urine output (true urine, excluding irrigation) is ",
-            {"blank_id": "b1", "label": "True urine output", "options": ["2,600 mL", "1,200 mL", "400 mL", "800 mL"]},
-            ". The nurse assesses the drainage color as pink-tinged and determines this is ",
-            {"blank_id": "b2", "label": "Clinical significance", "options": ["an emergency requiring immediate provider notification", "expected in the first 24–48 hours post-TURP", "a sign of bladder perforation", "indicative of catheter displacement"]},
-            ". Because the urine output is below 30 mL/hr, the nurse should first ",
-            {"blank_id": "b3", "label": "Priority action", "options": ["increase the CBI rate and reassess in 1 hour", "check for catheter kinks, clots, and patency before notifying the provider", "clamp the catheter for 15 minutes to allow the bladder to fill", "administer IV furosemide to force diuresis"]}
-          ]
-        },
-        "correct_answers": {
-          "b1": "400 mL",
-          "b2": "expected in the first 24–48 hours post-TURP",
-          "b3": "check for catheter kinks, clots, and patency before notifying the provider"
-        },
-        "rationale": "True urine = Total drainage − Irrigation infused = (2600−1400) − 800 = 1200−800 = 400 mL over 4 hours (100 mL/hr — acceptable but on the low end). Pink-tinged urine is normal post-TURP. Low output requires checking catheter patency first before any pharmacologic intervention."
-      },
-
-      {
-        "id": "mc_003",
-        "type": "MC",
-        "ngn": false,
-        "layer": "B",
-        "layer_subtype": "mechanism",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Pharmacological and Parenteral Therapies",
-        "concept_bucket": "TPN / Nutritional Support",
-        "tier1_fact": "Abrupt TPN discontinuation causes rebound hypoglycemia — bridge with D10W at the same rate",
-        "interference_pair": null,
-        "miss_type_flags": ["Fact gap", "Wrong priority schema"],
-        "text": "A client receiving TPN has the infusion accidentally discontinued. No new TPN bag is immediately available. Which action should the nurse take first?",
-        "options": {
-          "A": "Restart the TPN at a lower rate until the new bag arrives",
-          "B": "Infuse D10W (10% dextrose) at the same rate as the TPN",
-          "C": "Give the client orange juice orally to prevent hypoglycemia",
-          "D": "Notify the provider and hold all IV fluids until TPN is available"
-        },
-        "correct_answers": ["B"],
-        "rationale": "Abrupt TPN discontinuation causes rebound hypoglycemia because the pancreas continues secreting insulin for the high glucose load. D10W at the same rate maintains glucose delivery until TPN is restored. Oral intake is inappropriate for TPN patients."
-      },
-
-      {
-        "id": "sata_003",
-        "type": "SATA",
-        "ngn": false,
-        "layer": "C",
-        "layer_subtype": "teaching-evaluation",
-        "nclex_category": "Safe and Effective Care Environment",
-        "nclex_subcategory": "Safety and Infection Control",
-        "concept_bucket": "Post-Op Appendectomy",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Distractor trap", "Translation failure"],
-        "text": "The nurse is preparing to discharge a client following an appendectomy for a ruptured appendix. Which instructions should the nurse include? Select all that apply.",
-        "options": {
-          "A": "Report fever above 101°F to the provider immediately",
-          "B": "Resume normal diet and activity within 24 hours of discharge",
-          "C": "Keep the incision site clean and dry; report redness, swelling, or drainage",
-          "D": "Return to the ED for sudden worsening abdominal pain or abdominal rigidity",
-          "E": "Complete the full course of prescribed antibiotics even if feeling better",
-          "F": "Lift nothing heavier than 10 pounds until cleared by the provider"
-        },
-        "correct_answers": ["A", "C", "D", "E", "F"],
-        "rationale": "All discharge instructions are correct except B — activity and diet are gradually resumed, not immediately. All other instructions address wound healing, infection signs, antibiotic adherence, and activity restrictions appropriately."
-      },
-
-      {
-        "id": "bowtie_003",
-        "type": "BOWTIE",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "bowtie",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Physiological Adaptation",
-        "concept_bucket": "Upper GI Bleed / PUD",
-        "tier1_fact": null,
-        "interference_pair": "Peptic Ulcer Disease vs Acute MI",
-        "miss_type_flags": ["Distractor trap", "Wrong priority schema"],
-        "case_study": "A 66-year-old male with a history of GERD and PUD presents to the ED with sudden onset severe epigastric pain radiating to the back, coffee-ground emesis, BP 88/54 mmHg, HR 128 bpm, Hgb 6.8 g/dL, BUN 42 mg/dL (elevated), and a positive NG lavage for bright red blood.",
-        "text": "Complete the bowtie diagram for this client's presentation.",
-        "bowtie": {
-          "condition_options": [
-            "Acute MI with referred epigastric pain",
-            "Upper GI bleed secondary to perforated peptic ulcer",
-            "Acute pancreatitis from gallstones",
-            "Mallory-Weiss tear from repeated vomiting",
-            "Mesenteric ischemia from arterial occlusion"
-          ],
-          "actions_to_take": [
-            "Establish two large-bore IV accesses and initiate aggressive fluid resuscitation",
-            "Insert NG tube and perform gastric lavage as ordered",
-            "Place client on NPO status and prepare for emergent upper endoscopy",
-            "Administer oral antacids to neutralize gastric acid",
-            "Transfuse packed red blood cells as ordered and monitor hemodynamic response"
-          ],
-          "parameters_to_monitor": [
-            "Blood pressure and heart rate response to fluid resuscitation",
-            "Hemoglobin and hematocrit trend",
-            "Urine output (goal ≥30 mL/hr)",
-            "Gastric lavage output color and volume",
-            "Signs of recurrent bleeding (melena, hematemesis)"
-          ]
-        },
-        "correct_answers": {
-          "condition": "Upper GI bleed secondary to perforated peptic ulcer",
-          "actions": [
-            "Establish two large-bore IV accesses and initiate aggressive fluid resuscitation",
-            "Transfuse packed red blood cells as ordered and monitor hemodynamic response"
-          ],
-          "parameters": [
-            "Blood pressure and heart rate response to fluid resuscitation",
-            "Hemoglobin and hematocrit trend"
-          ]
-        },
-        "rationale": "Bright red blood in NG lavage, coffee-ground emesis, hemodynamic instability, and low Hgb confirm a massive upper GI bleed. Priority = hemodynamic stabilization with IV access + fluids + PRBCs. Monitor BP/HR and Hgb/Hct to assess resuscitation effectiveness. Oral antacids are completely inappropriate in hemorrhagic shock."
-      },
-
-      {
-        "id": "matrix_003",
-        "type": "MATRIX",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "matrix grid",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Reduction of Risk Potential",
-        "concept_bucket": "Multi-patient Clinical Judgment",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Distractor trap", "Wrong priority schema"],
-        "case_study": "The nurse is reviewing the chart of four clients on the medical-surgical unit.",
-        "text": "For each client finding, select whether it requires Immediate Action, Monitoring Only, or Expected/Normal Finding.",
-        "matrix": {
-          "columns": ["Immediate Action", "Monitor Only", "Expected / Normal"],
-          "rows": [
-            {"id": "r1", "label": "Post-TURP client: urine drainage is bright red with clots"},
-            {"id": "r2", "label": "Post-laparoscopic cholecystectomy: right shoulder pain Day 1"},
-            {"id": "r3", "label": "Client on mesalamine: WBC 2,800/mm³ with bruising and sore throat"},
-            {"id": "r4", "label": "Client with meningitis: GCS drops from 14 to 9 over 2 hours"},
-            {"id": "r5", "label": "Client with Crohn's post-ileostomy: green liquid output Day 2"},
-            {"id": "r6", "label": "Client on ciprofloxacin: reports new bilateral heel pain"}
-          ]
-        },
-        "correct_answers": {
-          "r1": "Immediate Action",
-          "r2": "Expected / Normal",
-          "r3": "Immediate Action",
-          "r4": "Immediate Action",
-          "r5": "Expected / Normal",
-          "r6": "Immediate Action"
-        },
-        "rationale": "Bright red clots post-TURP = possible arterial bleed → increase CBI and notify. Shoulder pain post-lap chole = expected CO₂ referred pain. Mesalamine + bone marrow suppression signs = hold and notify. Declining GCS in meningitis = imminent herniation. Green ileostomy output = normal early post-op. Bilateral tendon pain on fluoroquinolones = tendon rupture warning → hold immediately."
-      },
-
-      {
-        "id": "trend_003",
-        "type": "TREND",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "trend",
-        "nclex_category": "Physiological Integrity",
-        "nclex_subcategory": "Physiological Adaptation",
-        "concept_bucket": "Ulcerative Colitis / Toxic Megacolon",
-        "tier1_fact": null,
-        "interference_pair": "Ulcerative Colitis vs Crohn's Disease",
-        "miss_type_flags": ["Stem misread", "Wrong priority schema"],
-        "case_study": "A 52-year-old female with ulcerative colitis (UC) is admitted during a severe flare. She is receiving IV methylprednisolone and bowel rest. The nurse monitors the following data.",
-        "text": "For each parameter, identify whether the trend is Improving, Worsening, or No change.",
-        "trend": {
-          "timepoints": ["Day 1", "Day 2", "Day 3"],
-          "data": [
-            {"label": "Bloody stools per day", "values": ["18", "14", "10"]},
-            {"label": "Abdominal distension (cm)", "values": ["88", "92", "96"]},
-            {"label": "Bowel sounds", "values": ["Hypoactive", "Absent", "Absent"]},
-            {"label": "Temperature (°F)", "values": ["101.4", "102.2", "103.6"]},
-            {"label": "Albumin (g/dL)", "values": ["2.8", "2.6", "2.4"]},
-            {"label": "Stool frequency response to steroids", "values": ["18", "14", "10"]}
-          ],
-          "items": [
-            {"id": "stools",    "label": "Bloody stool frequency"},
-            {"id": "distend",  "label": "Abdominal distension"},
-            {"id": "bs",       "label": "Bowel sounds"},
-            {"id": "fever",    "label": "Fever"},
-            {"id": "albumin",  "label": "Nutritional status (albumin)"},
-            {"id": "steroid",  "label": "Response to steroid therapy"}
-          ]
-        },
-        "correct_answers": {
-          "stools":   "Improving",
-          "distend":  "Worsening",
-          "bs":       "Worsening",
-          "fever":    "Worsening",
-          "albumin":  "Worsening",
-          "steroid":  "Improving"
-        },
-        "rationale": "While stool frequency is decreasing (improving response to steroids), the development of worsening abdominal distension, absent bowel sounds, rising fever, and declining albumin are signs of toxic megacolon — a life-threatening emergency. This mixed picture is the classic NGN clinical judgment challenge: not all trends point the same direction."
-      },
-
-      {
-        "id": "cloze_003",
-        "type": "CLOZE",
-        "ngn": true,
-        "layer": "NGN",
-        "layer_subtype": "drop-down/cloze",
-        "nclex_category": "Safe and Effective Care Environment",
-        "nclex_subcategory": "Safety and Infection Control",
-        "concept_bucket": "Meningitis",
-        "tier1_fact": null,
-        "interference_pair": null,
-        "miss_type_flags": ["Fact gap", "Distractor trap"],
-        "case_study": "A 45-year-old male with a new diagnosis of bacterial meningitis secondary to Neisseria meningitidis is admitted. Blood cultures were drawn. He has a penicillin allergy documented as 'anaphylaxis.'",
-        "text": "Complete the nursing actions by selecting the best option for each blank.",
-        "cloze": {
-          "sentence_parts": [
-            "The nurse knows that bacterial meningitis caused by N. meningitidis requires ",
-            {"blank_id": "b1", "label": "Isolation type", "options": ["Airborne precautions in a negative pressure room", "Droplet precautions — surgical mask within 3 feet", "Contact precautions with gown and gloves only", "Standard precautions only"]},
-            " for the first 24 hours of effective antibiotic therapy. Because the client has a documented anaphylaxis to penicillin, the nurse anticipates the provider will order ",
-            {"blank_id": "b2", "label": "Antibiotic choice", "options": ["amoxicillin-clavulanate as the first-line agent", "chloramphenicol or meropenem as a penicillin-safe alternative", "ceftriaxone, which is safe in penicillin allergy", "vancomycin, which is first-line for all meningitis"]},
-            ". Prior to the first antibiotic dose, the nurse must ensure ",
-            {"blank_id": "b3", "label": "Pre-antibiotic action", "options": ["the client has eaten a full meal to protect the GI tract", "blood cultures have already been collected", "a lumbar puncture has been completed and results reviewed", "the client has signed a consent form for antibiotic therapy"]}
-          ]
-        },
-        "correct_answers": {
-          "b1": "Droplet precautions — surgical mask within 3 feet",
-          "b2": "chloramphenicol or meropenem as a penicillin-safe alternative",
-          "b3": "blood cultures have already been collected"
-        },
-        "rationale": "N. meningitidis spreads via respiratory droplets, not airborne route. With penicillin anaphylaxis, cephalosporins carry a cross-reactivity risk — meropenem or chloramphenicol are safe alternatives. Blood cultures MUST be drawn before antibiotics to identify the organism, but antibiotics should not be delayed for LP results."
+      "correct_answers": ["B"],
+      "rationale": "TRUE URINE OUTPUT = Total Drainage − Irrigation Infused. 3,600 − 3,100 = 500 mL. If you fail to subtract the irrigation, you may falsely assume adequate urine output when the patient may actually be in renal failure. This formula is critical post-TURP.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf, Prof-Unit-4-HCIIIA-2026.pdf p.90",
+      "option_rationales": {
+        "A": "3,600 mL is the total drainage bag volume — it includes both irrigation and true urine. This is incorrect.",
+        "B": "CORRECT. 3,600 − 3,100 = 500 mL. This is the true urine output after subtracting irrigation infused.",
+        "C": "3,100 mL is the amount of irrigation infused, not urine output.",
+        "D": "6,700 mL is the sum of both volumes — a meaningless figure that represents no clinical measurement."
       }
+    },
 
-    ]
-  }
-]
+    {
+      "id": "u4-a-002",
+      "type": "MC",
+      "layer": "A",
+      "layer_subtype": "Recall — Drug Administration",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Medication Administration",
+      "concept_bucket": "Prazosin First Dose",
+      "interference_pair": "Prazosin vs Finasteride",
+      "text": "When should the first dose of Prazosin (Minipress) be administered to a patient with BPH?",
+      "options": {
+        "A": "With the morning meal",
+        "B": "At bedtime",
+        "C": "Two hours before the first void of the day",
+        "D": "With the largest meal of the day"
+      },
+      "correct_answers": ["B"],
+      "rationale": "Prazosin causes significant vasodilation via alpha-1 blockade, which leads to a sudden drop in blood pressure (orthostatic hypotension) after the first dose — a phenomenon called 'first-dose syncope.' Administering at bedtime allows the patient to sleep through the peak hypotensive effect, preventing falls.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (Prazosin section); Prof-Unit-4-HCIIIA-2026.pdf p.91",
+      "option_rationales": {
+        "A": "Morning administration would expose the patient to peak hypotensive effects while awake and mobile — high fall risk.",
+        "B": "CORRECT. First dose at bedtime allows the patient to sleep through peak vasodilation, preventing syncope and falls.",
+        "C": "This timing has no pharmacological basis and still carries syncope risk.",
+        "D": "Meal timing does not mitigate the orthostatic hypotension risk of the first dose."
+      }
+    },
+
+    {
+      "id": "u4-a-003",
+      "type": "MC",
+      "layer": "A",
+      "layer_subtype": "Recall — Drug Safety",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Medication Safety",
+      "concept_bucket": "Finasteride Handling",
+      "interference_pair": "Prazosin vs Finasteride",
+      "text": "Which instruction is MOST critical when teaching a female patient of childbearing potential who handles medications in her household about Finasteride (Proscar)?",
+      "options": {
+        "A": "Take this medication with food to reduce nausea",
+        "B": "Expect results within 1–2 weeks",
+        "C": "Never crush, break, or handle the tablets without gloves if pregnant or may become pregnant",
+        "D": "Monitor blood pressure daily while the patient takes this drug"
+      },
+      "correct_answers": ["C"],
+      "rationale": "Finasteride is a 5-alpha-reductase inhibitor that blocks testosterone-to-DHT conversion. It is absorbed through the skin. Pregnant individuals who handle crushed or broken tablets absorb the drug, which crosses the placenta and causes abnormal development of male fetal genitalia. Film-coated tablets that are intact are safer — they must NEVER be crushed.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (Finasteride section); Prof-Unit-4-HCIIIA-2026.pdf p.92",
+      "option_rationales": {
+        "A": "Food timing is not the critical teaching for Finasteride — safety of handling is the priority.",
+        "B": "Finasteride requires 3–6 months to show effect, not 1–2 weeks. This is also incorrect content.",
+        "C": "CORRECT. Dermal absorption of Finasteride by pregnant individuals causes fetal harm. This is the most critical and life-altering safety teaching.",
+        "D": "Finasteride does not significantly affect blood pressure — that is Prazosin. This reflects the classic interference pair confusion."
+      }
+    },
+
+    {
+      "id": "u4-a-004",
+      "type": "MC",
+      "layer": "A",
+      "layer_subtype": "Recall — Assessment Sequence",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Illness Management",
+      "concept_bucket": "Appendicitis Sequence",
+      "text": "Which sequence of symptoms is CHARACTERISTIC of appendicitis and helps distinguish it from gastroenteritis?",
+      "options": {
+        "A": "Nausea and vomiting → then right lower quadrant pain",
+        "B": "Diarrhea → then fever → then abdominal pain",
+        "C": "Right lower quadrant pain → then nausea and vomiting",
+        "D": "Fever → then constipation → then right lower quadrant pain"
+      },
+      "correct_answers": ["C"],
+      "rationale": "In appendicitis, PAIN comes FIRST — typically starting periumbilically and migrating to the right lower quadrant (McBurney's point), followed by nausea and vomiting. In gastroenteritis, GI symptoms (nausea/vomiting/diarrhea) come first. This sequence is a high-yield differentiating fact tested on NCLEX.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Chief Complaint Differential Table); Prof-Unit-4-HCIIIA-2026.pdf",
+      "option_rationales": {
+        "A": "N/V before pain is the gastroenteritis pattern, not appendicitis.",
+        "B": "Diarrhea as the first symptom suggests gastroenteritis or IBD, not appendicitis.",
+        "C": "CORRECT. Pain FIRST (RLQ, McBurney's point), THEN nausea/vomiting. This is the diagnostic sequence for appendicitis.",
+        "D": "Fever and constipation first is not the classic appendicitis presentation."
+      }
+    },
+
+    {
+      "id": "u4-aa-001",
+      "type": "MC",
+      "layer": "A-Applied",
+      "layer_subtype": "Fact in Disguise — CBI Output",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Fluid and Electrolyte Management",
+      "concept_bucket": "CBI Output Calculation",
+      "text": "A nurse reviews the intake and output record for a patient 6 hours post-TURP with continuous bladder irrigation (CBI). The drainage bag contains 4,800 mL of fluid. The irrigation solution hung has delivered 4,800 mL since the catheter was placed. Which interpretation is CORRECT?",
+      "options": {
+        "A": "The patient has an excellent urine output of 800 mL/hr",
+        "B": "The patient's true urine output is 0 mL and warrants immediate provider notification",
+        "C": "The drainage bag needs to be emptied since it equals the input",
+        "D": "The CBI rate should be increased because output equals input"
+      },
+      "correct_answers": ["B"],
+      "rationale": "TRUE URINE = Total Drainage − Irrigation Infused. 4,800 − 4,800 = 0 mL. A true urine output of 0 mL six hours post-op suggests acute urinary retention or renal compromise — a critical finding requiring immediate provider notification. Failing to subtract irrigation volume would falsely suggest adequate output.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (TURP/CBI section); Prof-Unit-4-HCIIIA-2026.pdf p.90",
+      "option_rationales": {
+        "A": "This interprets the drainage bag volume as urine — a critical error. 4,800 mL is ALL drainage, most of which is irrigation.",
+        "B": "CORRECT. 4,800 − 4,800 = 0 mL true urine. This is a medical emergency requiring immediate notification.",
+        "C": "Emptying the bag is a nursing action but not the correct interpretation of this data.",
+        "D": "Increasing CBI rate is not the correct response when true urine output is zero."
+      }
+    },
+
+    {
+      "id": "u4-aa-002",
+      "type": "MC",
+      "layer": "A-Applied",
+      "layer_subtype": "Fact in Disguise — Orthostatic BP",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Adverse Drug Effects",
+      "concept_bucket": "Prazosin Orthostatic Hypotension",
+      "interference_pair": "Prazosin vs Finasteride",
+      "text": "A patient started Prazosin 3 days ago. Vital signs are: supine BP 128/82, sitting BP 112/74, standing BP 104/70. The patient reports feeling dizzy when standing. What should the nurse document?",
+      "options": {
+        "A": "Normal blood pressure response; no intervention required",
+        "B": "Orthostatic hypotension — systolic drop of 24 mmHg and diastolic drop of 12 mmHg on standing",
+        "C": "Hypertensive urgency requiring immediate provider notification",
+        "D": "Hypoglycemia — glucose check required before reporting"
+      },
+      "correct_answers": ["B"],
+      "rationale": "Orthostatic hypotension is defined as a systolic drop ≥20 mmHg OR diastolic drop ≥10 mmHg when moving from lying to standing. This patient shows a 24 mmHg systolic drop and 12 mmHg diastolic drop — both criteria are met. This is a known adverse effect of Prazosin (alpha-1 blockade causes vasodilation). Teaching: rise slowly, avoid hot showers and alcohol.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (Prazosin section)",
+      "option_rationales": {
+        "A": "A 24 mmHg systolic drop exceeds the ≥20 mmHg threshold — this is clinically significant orthostatic hypotension.",
+        "B": "CORRECT. Systolic drop 24 mmHg (≥20 threshold met), diastolic drop 12 mmHg (≥10 threshold met). Classic Prazosin adverse effect.",
+        "C": "These values indicate hypotension, not hypertension. Hypertensive urgency is BP >180/120.",
+        "D": "Dizziness from Prazosin is vascular, not glycemic. Glucose monitoring is not the priority here."
+      }
+    },
+
+    {
+      "id": "u4-b-001",
+      "type": "MC",
+      "layer": "B",
+      "layer_subtype": "Mechanism — Drug",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Pharmacological Actions",
+      "concept_bucket": "Finasteride Mechanism",
+      "interference_pair": "Prazosin vs Finasteride",
+      "text": "A nursing student asks why Finasteride (Proscar) takes 3–6 months to relieve BPH symptoms while Prazosin provides relief within hours. Which explanation is CORRECT?",
+      "options": {
+        "A": "Finasteride is absorbed more slowly because it is enteric-coated",
+        "B": "Finasteride must inhibit testosterone-to-DHT conversion long enough to allow the prostate to physically shrink, which requires months",
+        "C": "Finasteride works by relaxing smooth muscle, which requires time to accumulate in tissue",
+        "D": "Prazosin works faster because it has a higher bioavailability"
+      },
+      "correct_answers": ["B"],
+      "rationale": "Prazosin is an alpha-1 blocker — it relaxes smooth muscle in the prostate and bladder neck within hours, providing immediate symptom relief (but the prostate size is unchanged). Finasteride is a 5-alpha-reductase inhibitor — it blocks testosterone→DHT conversion. DHT is the hormone that drives prostate cell growth. Without DHT, the prostate slowly involutes (shrinks) over 3–6 months. These two drugs are often prescribed together: Prazosin for immediate relief, Finasteride for long-term size reduction.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (Prazosin + Finasteride sections); Prof-Unit-4-HCIIIA-2026.pdf p.91-92",
+      "option_rationales": {
+        "A": "The coating type does not explain the mechanism. Finasteride is film-coated to prevent handling risk, not for delayed release.",
+        "B": "CORRECT. Finasteride blocks testosterone→DHT conversion. Without DHT, prostate cells stop proliferating and the gland shrinks — a physical process that takes 3–6 months.",
+        "C": "Relaxing smooth muscle is Prazosin's mechanism, not Finasteride's.",
+        "D": "Bioavailability differences do not explain the mechanism difference — this answer misattributes cause."
+      }
+    },
+
+    {
+      "id": "u4-b-002",
+      "type": "MC",
+      "layer": "B",
+      "layer_subtype": "Mechanism — Pathophysiology",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Pathophysiology",
+      "concept_bucket": "Appendicitis Cascade",
+      "text": "A patient is admitted with appendicitis. The nurse knows that a WBC of 22,000/mm³ (compared to the normal 10,000–18,000 range for appendicitis) is most concerning for which complication?",
+      "options": {
+        "A": "Dehydration from nausea and vomiting",
+        "B": "Perforation of the appendix with peritonitis",
+        "C": "Septicemia from a urinary tract infection",
+        "D": "Appendiceal abscess formation requiring drainage only"
+      },
+      "correct_answers": ["B"],
+      "rationale": "In uncomplicated appendicitis, WBC is typically 10,000–18,000/mm³. A WBC >20,000/mm³ strongly suggests perforation has already occurred, which introduces bowel bacteria into the peritoneal cavity and causes peritonitis — a life-threatening emergency. Perforation can occur within 24 hours of symptom onset, hence why same-day appendectomy is standard of care.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Cluster B — Appendicitis); Prof-Unit-4-HCIIIA-2026.pdf",
+      "option_rationales": {
+        "A": "Dehydration does not cause WBC elevation of this magnitude.",
+        "B": "CORRECT. WBC >20,000 is the threshold for suspected perforation → peritonitis. This requires emergency surgical intervention.",
+        "C": "A UTI could elevate WBC but would have urinary symptoms (dysuria, frequency) and would not explain RLQ tenderness/guarding.",
+        "D": "An abscess alone does not typically drive WBC this high in isolation, and 'drainage only' understates the urgency."
+      }
+    },
+
+    {
+      "id": "u4-c-001",
+      "type": "SATA",
+      "layer": "C",
+      "layer_subtype": "Clinical Judgment — Priority Actions",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Postoperative Care",
+      "concept_bucket": "TURP Post-Op Care",
+      "text": "A nurse is caring for a patient 2 hours after TURP with CBI. Which nursing assessments and actions are APPROPRIATE at this time? Select ALL that apply.",
+      "options": {
+        "A": "Calculate true urine output by subtracting irrigation infused from total drainage",
+        "B": "Reassure the patient that urge to void with the catheter in place is abnormal and should be reported",
+        "C": "Assess CBI drainage color — blood-tinged to pink is expected; bright red with clots warrants immediate notification",
+        "D": "Position the drainage bag above the level of the bladder to promote drainage",
+        "E": "Instruct the patient to drink 2,500 mL of fluid per day unless contraindicated",
+        "F": "Empty the drainage bag when it is two-thirds full"
+      },
+      "correct_answers": ["A", "C", "E", "F"],
+      "rationale": "Post-TURP CBI care requires: (A) accurate output calculation using the formula; (C) color assessment — normal is blood-tinged to pink, clearing by discharge; bright red with clots requires immediate notification; (E) 2,500 mL/day to prevent catheter clotting; (F) empty at 2/3 full to prevent backflow. B is incorrect — urge to void WITH a catheter in place is NORMAL and expected (large catheter stimulates the sensation). D is incorrect — the drainage bag must be BELOW the bladder at all times to prevent backflow and infection.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (TURP/CBI section)",
+      "option_rationales": {
+        "A": "CORRECT. TRUE URINE = Total − Irrigation. Always required for accurate output documentation.",
+        "B": "INCORRECT. Urge to void with catheter IN PLACE is NORMAL. The large-bore catheter (20–24 French) stimulates bladder contraction sensation. Telling patients this is abnormal causes unnecessary anxiety.",
+        "C": "CORRECT. Expected color progression: blood-tinged → pink → clear by discharge. Bright red + clots = active bleeding requiring immediate provider notification.",
+        "D": "INCORRECT. Drainage bag MUST be BELOW bladder level. Raising it allows urine to flow backward into the bladder, increasing infection and obstruction risk.",
+        "E": "CORRECT. 2,500 mL/day fluid intake helps keep the catheter patent and prevents clot formation in the bladder.",
+        "F": "CORRECT. Emptying at 2/3 full prevents the bag from becoming too heavy (risk of disconnection) and prevents backflow."
+      }
+    },
+
+    {
+      "id": "u4-c-002",
+      "type": "SATA",
+      "layer": "C",
+      "layer_subtype": "Clinical Judgment — Priority Assessment",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Medical Emergencies",
+      "concept_bucket": "Peritonitis Assessment",
+      "text": "A nurse assesses a patient 12 hours post-appendectomy. Which findings indicate that the patient may be developing peritonitis and should be reported IMMEDIATELY? Select ALL that apply.",
+      "options": {
+        "A": "Abdomen is soft and non-tender on palpation",
+        "B": "Rigid, board-like abdomen",
+        "C": "Temperature 38.9°C (102°F)",
+        "D": "Bowel sounds audible in all four quadrants",
+        "E": "WBC 24,000/mm³",
+        "F": "Heart rate 118 beats/minute",
+        "G": "Patient reporting feeling better and requesting a meal"
+      },
+      "correct_answers": ["B", "C", "E", "F"],
+      "rationale": "Classic peritonitis signs: rigid/board-like abdomen (involuntary guarding from peritoneal inflammation), fever >38.3°C, WBC >20,000 suggesting infection/perforation, and tachycardia from inflammatory/septic response. A soft abdomen, present bowel sounds, and feeling better are reassuring findings inconsistent with peritonitis.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Cluster D — Peritonitis); Prof-Unit-4-HCIIIA-2026.pdf",
+      "option_rationales": {
+        "A": "Soft, non-tender abdomen is a REASSURING finding — inconsistent with peritonitis.",
+        "B": "CORRECT. Rigid, board-like abdomen is the CLASSIC sign of peritonitis — involuntary abdominal muscle guarding from peritoneal irritation.",
+        "C": "CORRECT. Temperature ≥38.3°C (101°F) signals active infection/inflammation. This must be reported immediately.",
+        "D": "Audible bowel sounds suggest the bowel is still motile — reassuring finding. Peritonitis causes absent/diminished bowel sounds (ileus).",
+        "E": "CORRECT. WBC >20,000/mm³ suggests perforation has occurred or active peritonitis is developing.",
+        "F": "CORRECT. Tachycardia (HR 118) in this context indicates systemic inflammatory response — an early sepsis sign.",
+        "G": "Feeling better and requesting meals is a reassuring sign inconsistent with the acute distress of peritonitis."
+      }
+    },
+
+    {
+      "id": "u4-d-001",
+      "type": "MC",
+      "layer": "D",
+      "layer_subtype": "Interference Pair",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Expected Actions/Outcomes",
+      "concept_bucket": "BPH Medications",
+      "interference_pair": "Prazosin vs Finasteride",
+      "text": "A nurse is comparing two BPH medications. Medication A works within hours, lowers blood pressure, and is given at bedtime. Medication B requires 3–6 months to work, lowers PSA by ~50%, and must never be handled crushed by pregnant individuals. Which pairing is CORRECT?",
+      "options": {
+        "A": "Medication A = Finasteride; Medication B = Prazosin",
+        "B": "Medication A = Prazosin; Medication B = Finasteride",
+        "C": "Both medications are alpha-1 blockers",
+        "D": "Both medications work within 24 hours"
+      },
+      "correct_answers": ["B"],
+      "rationale": "Medication A is Prazosin (alpha-1 blocker): rapid onset hours, lowers BP via vasodilation, given at bedtime to prevent first-dose syncope. Medication B is Finasteride (5-alpha-reductase inhibitor): slow onset 3–6 months, shrinks prostate by blocking DHT, lowers PSA by ~50%, and cannot be handled crushed by pregnant individuals due to teratogenicity.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (BPH medications section); Prof-Unit-4-HCIIIA-2026.pdf p.91-92",
+      "option_rationales": {
+        "A": "INCORRECT. This has the two medications reversed — classic interference pair confusion.",
+        "B": "CORRECT. Prazosin = fast, BP-lowering, bedtime. Finasteride = slow, prostate-shrinking, teratogenic when crushed.",
+        "C": "Finasteride is NOT an alpha-1 blocker — it is a 5-alpha-reductase inhibitor. This is the key mechanism distinction.",
+        "D": "Finasteride requires 3–6 months. Only Prazosin acts within hours."
+      }
+    },
+
+    {
+      "id": "u4-d-002",
+      "type": "MC",
+      "layer": "D",
+      "layer_subtype": "Interference Pair",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Nutritional Support",
+      "concept_bucket": "TPN vs Enteral",
+      "interference_pair": "TPN vs Enteral Nutrition",
+      "text": "A nurse is distinguishing between TPN and enteral tube feeding. Which statement is CORRECT?",
+      "options": {
+        "A": "TPN uses the GI tract and has a lower infection risk than enteral feeding",
+        "B": "Enteral feeding requires a central line and must be tapered to prevent hypoglycemia",
+        "C": "TPN must be tapered off gradually; abrupt discontinuation causes hypoglycemia",
+        "D": "Enteral feeding tubing is changed every 24 hours"
+      },
+      "correct_answers": ["C"],
+      "rationale": "TPN (Total Parenteral Nutrition) delivers concentrated dextrose intravenously, causing the pancreas to produce high levels of insulin. Abrupt discontinuation leaves insulin circulating without glucose input → hypoglycemia. If TPN is unavailable, D10W is infused to bridge. Enteral feeding uses the GI tract (not IV) and does NOT require tapering. Enteral has lower infection risk; TPN uses a central line with higher infection risk. TPN tubing changes every 24 hours (not enteral).",
+      "source_reference": "Unit4_MASTERY_Guide.html (Enteral vs TPN table); Unit4-Hybrid-Supplemental.md.pdf",
+      "option_rationales": {
+        "A": "INCORRECT. TPN bypasses the GI tract entirely and uses a central line. It has HIGHER infection risk, not lower.",
+        "B": "INCORRECT. Enteral feeding uses a tube into the GI tract, not a central line. Tapering is required for TPN, not enteral.",
+        "C": "CORRECT. TPN causes prolonged high insulin secretion. Abrupt stop → hypoglycemia. Bridge with D10W if TPN unavailable.",
+        "D": "Enteral feeding tubing is changed per protocol (not every 24 hours). TPN tubing changes every 24 hours — this is a classic reversal error."
+      }
+    },
+
+    {
+      "id": "u4-ngn-bowtie-001",
+      "type": "BOWTIE",
+      "layer": "NGN",
+      "layer_subtype": "NGN — Bowtie",
+      "ngn": true,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Postoperative Care",
+      "concept_bucket": "TURP Post-Op",
+      "case_study": "A 68-year-old male is 4 hours post-TURP. His CBI is running. The drainage bag has collected 1,800 mL; 1,200 mL of irrigation has been infused. The patient is restless and reports suprapubic pressure. Vital signs: BP 148/90, HR 102, Temp 37.2°C. The CBI outflow tubing appears kinked.",
+      "text": "Based on the scenario above, complete the Bowtie by identifying the condition the patient is most likely experiencing, the 2 priority actions to take, and the 2 parameters to monitor.",
+      "bowtie": {
+        "condition_options": [
+          "Catheter obstruction with bladder distension",
+          "Septic shock",
+          "Hemorrhagic shock",
+          "Normal post-op response"
+        ],
+        "condition_count": 1,
+        "actions_to_take": [
+          "Unkink and irrigate the outflow tubing",
+          "Increase the CBI infusion rate to 300 mL/hr",
+          "Notify the provider immediately",
+          "Administer opioid analgesic per order",
+          "Apply abdominal ice packs"
+        ],
+        "action_count": 2,
+        "parameters_to_monitor": [
+          "CBI drainage color and clot presence",
+          "True urine output (drainage minus irrigation)",
+          "Rectal temperature every 4 hours",
+          "Blood glucose level",
+          "Serum calcium"
+        ],
+        "param_count": 2
+      },
+      "correct_answers": {
+        "condition": "Catheter obstruction with bladder distension",
+        "actions": ["Unkink and irrigate the outflow tubing", "Notify the provider immediately"],
+        "parameters": ["CBI drainage color and clot presence", "True urine output (drainage minus irrigation)"]
+      },
+      "rationale": "The kinked tubing is the most likely cause of the restlessness and suprapubic pressure — obstruction prevents drainage, causing bladder distension. True urine output is 600 mL (1,800 − 1,200), which appears adequate; however, the obstruction must be resolved immediately. Notify the provider when obstruction does not resolve easily. Key parameters post-TURP: drainage color (blood-tinged → pink → clear is normal; bright red with clots = abnormal) and true urine output.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (TURP/CBI section); Prof-Unit-4-HCIIIA-2026.pdf p.90",
+      "bowtie_rationales": {
+        "condition": "Kinked outflow tubing prevents CBI drainage → urine and irrigation accumulate → bladder distension → suprapubic pressure and restlessness. Tachycardia is from discomfort, not sepsis (no fever). Vital signs do not yet indicate shock.",
+        "actions": "First: resolve the mechanical obstruction (unkink/irrigate tubing). Second: notify provider — obstruction post-TURP is a clinical priority and may require gentle manual irrigation or catheter replacement if tubing correction alone fails.",
+        "parameters": "Drainage color tells you if bleeding is worsening (bright red = emergent). True urine output (drainage − irrigation) is the gold-standard post-TURP renal function indicator."
+      }
+    },
+
+    {
+      "id": "u4-ngn-matrix-001",
+      "type": "MATRIX",
+      "layer": "NGN",
+      "layer_subtype": "NGN — Matrix Grid",
+      "ngn": true,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Illness Management",
+      "concept_bucket": "Post-TURP Assessment",
+      "case_study": "A nurse is reviewing the assessment findings for a patient 8 hours post-TURP with CBI. The following data is collected.",
+      "text": "For each assessment finding, indicate whether it is Expected (normal post-TURP) or Unexpected (requires provider notification).",
+      "matrix": {
+        "columns": ["Expected", "Unexpected"],
+        "rows": [
+          {"id": "r1", "label": "CBI drainage color: light pink"},
+          {"id": "r2", "label": "Patient states urge to void with catheter in place"},
+          {"id": "r3", "label": "Drainage bag at waist level (same height as patient's hip)"},
+          {"id": "r4", "label": "Temperature 39.2°C (102.6°F)"},
+          {"id": "r5", "label": "True urine output 75 mL for past hour"}
+        ]
+      },
+      "correct_answers": {
+        "r1": "Expected",
+        "r2": "Expected",
+        "r3": "Unexpected",
+        "r4": "Unexpected",
+        "r5": "Expected"
+      },
+      "rationale": "r1: Pink/blood-tinged drainage is expected at 8 hours post-TURP, clearing by discharge. r2: The sensation of needing to void WITH the catheter in place is NORMAL — the large-bore catheter (20–24 Fr) irritates the bladder trigone, causing a false urge. r3: The drainage bag must ALWAYS be below the level of the bladder. Waist height is at or above bladder level — this risks backflow and infection. r4: Temperature >38.3°C (101°F) suggests infection/sepsis — must be reported immediately. r5: 75 mL/hr true urine output is within acceptable range (goal ≥30 mL/hr).",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (TURP/CBI section)",
+      "cell_rationales": {
+        "r1": "Blood-tinged to pink drainage is the expected color 8 hours post-TURP. Bright red with clots would be unexpected.",
+        "r2": "The urge to void with a catheter is NORMAL post-TURP. The 20–24 French catheter stimulates the bladder neck sensation. Teaching this reduces patient anxiety.",
+        "r3": "The drainage bag MUST be below bladder level at all times to prevent backflow. Waist height is level with or above the bladder — this is an error requiring correction.",
+        "r4": "Fever >38.3°C (101°F) post-TURP indicates possible urinary tract infection or urosepsis — provider must be notified immediately.",
+        "r5": "75 mL/hr true urine output (after subtracting irrigation) is adequate. The minimum acceptable is 30 mL/hr."
+      }
+    },
+
+    {
+      "id": "u4-ngn-trend-001",
+      "type": "TREND",
+      "layer": "NGN",
+      "layer_subtype": "NGN — Trend",
+      "ngn": true,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Illness Management",
+      "concept_bucket": "Appendicitis Deterioration",
+      "case_study": "A 22-year-old patient admitted with right lower quadrant pain is being monitored over 12 hours. The nurse reviews the following assessment data.",
+      "text": "Review the trend data below. For each parameter, select the trend over the 12-hour period.",
+      "trend": {
+        "timepoints": ["0800", "1200", "1600", "2000"],
+        "data": [
+          {"label": "WBC (cells/mm³)", "values": [13500, 16200, 19800, 23400]},
+          {"label": "Pain Scale (0–10)", "values": [5, 6, 7, 9]},
+          {"label": "Temperature °F", "values": [99.1, 99.8, 100.9, 102.4]},
+          {"label": "BP mmHg (systolic)", "values": [124, 118, 112, 98]}
+        ],
+        "items": [
+          {"id": "wbc", "label": "WBC trend"},
+          {"id": "pain", "label": "Pain trend"},
+          {"id": "temp", "label": "Temperature trend"},
+          {"id": "bp", "label": "Blood pressure trend"}
+        ]
+      },
+      "correct_answers": {
+        "wbc":  "Worsening",
+        "pain": "Worsening",
+        "temp": "Worsening",
+        "bp":   "Worsening"
+      },
+      "rationale": "All four parameters are trending in a dangerous direction: WBC rising from 13,500 → 23,400 (>20,000 = perforation risk), pain escalating (5 → 9), temperature rising toward 102.4°F (fever), and systolic BP dropping (124 → 98 mmHg, approaching hypotension). This pattern is consistent with appendiceal perforation progressing toward peritonitis and septic shock. The nurse must notify the provider IMMEDIATELY and prepare for emergency surgery.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Cluster B — Appendicitis); Prof-Unit-4-HCIIIA-2026.pdf"
+    },
+
+    {
+      "id": "u4-ngn-cloze-001",
+      "type": "CLOZE",
+      "layer": "NGN",
+      "layer_subtype": "NGN — Drop-Down Cloze",
+      "ngn": true,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Medication Administration",
+      "concept_bucket": "BPH Medications",
+      "interference_pair": "Prazosin vs Finasteride",
+      "text": "Complete the nursing teaching note for a patient newly prescribed both BPH medications.",
+      "cloze": {
+        "sentence_parts": [
+          "The nurse teaches the patient: Prazosin should be taken at ",
+          {"blank_id": "b1", "label": "Prazosin timing", "options": ["bedtime", "morning with breakfast", "with the largest meal", "any time of day"]},
+          " to reduce the risk of ",
+          {"blank_id": "b2", "label": "Prazosin risk", "options": ["syncope from orthostatic hypotension", "hyperglycemia", "bradycardia", "renal failure"]},
+          ". Finasteride requires ",
+          {"blank_id": "b3", "label": "Finasteride onset", "options": ["3–6 months", "24–48 hours", "1–2 weeks", "6–12 hours"]},
+          " to shrink the prostate, and pregnant individuals must NEVER handle ",
+          {"blank_id": "b4", "label": "Finasteride form", "options": ["crushed tablets", "intact film-coated tablets", "the pill bottles", "liquid formulations"]},
+          " due to risk of fetal harm."
+        ]
+      },
+      "correct_answers": {
+        "b1": "bedtime",
+        "b2": "syncope from orthostatic hypotension",
+        "b3": "3–6 months",
+        "b4": "crushed tablets"
+      },
+      "rationale": "Prazosin: first dose at BEDTIME to sleep through first-dose syncope risk (alpha-1 vasodilation drops BP acutely). Finasteride: 3–6 months to work (shrinks prostate via DHT blockade). Pregnant individuals must NOT handle CRUSHED tablets — the film coating on intact tablets provides a protective barrier, but crushing removes it and allows dermal absorption → fetal teratogenicity.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (BPH Medications section); Prof-Unit-4-HCIIIA-2026.pdf p.91-92"
+    },
+
+    {
+      "id": "u4-c-003",
+      "type": "SATA",
+      "layer": "C",
+      "layer_subtype": "Clinical Judgment — Pre-Op Care",
+      "ngn": false,
+      "nclex_category": "Physiological Adaptation",
+      "nclex_subcategory": "Perioperative Care",
+      "concept_bucket": "Appendicitis Pre-Op",
+      "text": "A patient is admitted with suspected appendicitis. The nurse prepares the patient for emergency appendectomy. Which nursing actions are APPROPRIATE at this time? Select ALL that apply.",
+      "options": {
+        "A": "Maintain the patient NPO",
+        "B": "Apply a heating pad to the right lower quadrant to reduce pain",
+        "C": "Administer a Fleet enema to relieve constipation",
+        "D": "Establish IV access and begin IV fluid replacement",
+        "E": "Position the patient in semi-Fowler's for comfort",
+        "F": "Monitor WBC and notify provider if greater than 20,000"
+      },
+      "correct_answers": ["A", "D", "E", "F"],
+      "rationale": "Appropriate pre-op appendicitis care: NPO for surgical preparation; IV access and fluids to maintain perfusion; semi-Fowler's for comfort and to facilitate drainage if rupture occurs; WBC monitoring for perforation risk. B (heating pad) is CONTRAINDICATED — heat increases inflammation and can precipitate rupture. C (enema) is CONTRAINDICATED — increases intraluminal pressure and can cause perforation.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Cluster B — 'Don't Rupture It' Protocol); Prof-Unit-4-HCIIIA-2026.pdf",
+      "option_rationales": {
+        "A": "CORRECT. NPO is required for surgical preparation — oral intake must stop immediately.",
+        "B": "INCORRECT. Heat increases inflammation and blood flow to the area — this can accelerate perforation. NEVER apply heat to a suspected inflamed appendix.",
+        "C": "INCORRECT. Enemas increase intraluminal pressure in the colon, which can rupture an inflamed, distended appendix. This is explicitly contraindicated.",
+        "D": "CORRECT. IV access is essential for fluid replacement, antibiotic administration, and anesthesia induction.",
+        "E": "CORRECT. Semi-Fowler's promotes comfort (reduces abdominal tension), promotes lung expansion, and helps localize any leaked fluid to the pelvis if rupture occurs.",
+        "F": "CORRECT. WBC >20,000/mm³ is the clinical threshold suggesting perforation has occurred — provider must be notified immediately."
+      }
+    },
+
+    {
+      "id": "u4-c-004",
+      "type": "MC",
+      "layer": "C",
+      "layer_subtype": "Clinical Judgment — Teaching",
+      "ngn": false,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Patient/Family Teaching",
+      "concept_bucket": "Finasteride PSA Interpretation",
+      "text": "A patient on Finasteride for 6 months has a PSA result of 2.4 ng/mL. His provider says \"we need to double this value to interpret it correctly.\" The patient asks the nurse why. What is the BEST explanation?",
+      "options": {
+        "A": "Finasteride causes PSA to be released more slowly into the blood",
+        "B": "Finasteride inhibits DHT, which lowers PSA production by about 50%; the true PSA is estimated by doubling the result",
+        "C": "The lab machine is calibrated differently for patients on Finasteride",
+        "D": "Finasteride increases renal excretion of PSA, making levels appear falsely low"
+      },
+      "correct_answers": ["B"],
+      "rationale": "Finasteride suppresses the prostate's production of PSA by approximately 50% as a secondary effect of DHT suppression. If a patient's true PSA is 4.8 ng/mL but they are on Finasteride, the measured result will be ~2.4 ng/mL. Clinicians must DOUBLE the measured value to estimate the true PSA for prostate cancer screening purposes.",
+      "source_reference": "Unit4-Hybrid-Supplemental.md.pdf (Finasteride section); Prof-Unit-4-HCIIIA-2026.pdf p.92",
+      "option_rationales": {
+        "A": "PSA release rate is not the mechanism — it's about suppressed production.",
+        "B": "CORRECT. Finasteride lowers PSA by ~50% through DHT suppression. The lab value must be doubled for accurate prostate cancer screening interpretation.",
+        "C": "The lab machine is not recalibrated — the clinician adjusts for the drug effect manually.",
+        "D": "PSA is not renally cleared in a way that Finasteride would affect. This is a fabricated mechanism."
+      }
+    },
+
+    {
+      "id": "u4-ngn-matrix-002",
+      "type": "MATRIX",
+      "layer": "NGN",
+      "layer_subtype": "NGN — Matrix Grid",
+      "ngn": true,
+      "nclex_category": "Pharmacological and Parenteral Therapies",
+      "nclex_subcategory": "Nutritional Support",
+      "concept_bucket": "TPN vs Enteral",
+      "interference_pair": "TPN vs Enteral Nutrition",
+      "case_study": "A nurse is caring for two patients: Patient A has TPN running via a central line. Patient B has enteral tube feeding via a nasogastric tube. The nurse prepares to manage both patients' nutritional support.",
+      "text": "For each nursing action, indicate whether it applies to TPN, Enteral Feeding, or Both.",
+      "matrix": {
+        "columns": ["TPN Only", "Enteral Only", "Both"],
+        "rows": [
+          {"id": "r1", "label": "Monitor blood glucose every 4–6 hours"},
+          {"id": "r2", "label": "Confirm tube placement via x-ray before first feeding"},
+          {"id": "r3", "label": "Change tubing every 24 hours"},
+          {"id": "r4", "label": "Taper off gradually to prevent hypoglycemia"},
+          {"id": "r5", "label": "Hold feeding for medication administration"}
+        ]
+      },
+      "correct_answers": {
+        "r1": "TPN Only",
+        "r2": "Enteral Only",
+        "r3": "TPN Only",
+        "r4": "TPN Only",
+        "r5": "Enteral Only"
+      },
+      "rationale": "TPN uses concentrated dextrose IV → hyperglycemia risk → glucose monitoring. Enteral: confirm placement by x-ray before starting. TPN tubing every 24 hours per policy; enteral per protocol. TPN must be tapered (abrupt stop → hypoglycemia from residual insulin); enteral can be stopped without tapering. Enteral is held for medication administration; TPN is IV and not affected by oral/tube meds.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Enteral vs TPN table)",
+      "cell_rationales": {
+        "r1": "TPN delivers concentrated dextrose IV — the pancreas secretes high insulin, raising hyperglycemia risk. Blood glucose monitoring every 4–6 hours is standard TPN care.",
+        "r2": "Enteral feeding via NG tube MUST have placement confirmed by x-ray before the first feeding. Misplacement into the airway causes fatal aspiration if feeding is started.",
+        "r3": "TPN tubing changes every 24 hours due to high infection risk (central line + concentrated dextrose is an excellent bacterial growth medium). Enteral tubing follows a different protocol.",
+        "r4": "TPN must be tapered — abrupt discontinuation leaves circulating insulin without glucose substrate → hypoglycemia. If TPN is unavailable, bridge with D10W.",
+        "r5": "Enteral tube feedings are stopped during medication administration to prevent drug-nutrient interactions (many drugs are absorbed differently with food)."
+      }
+    },
+
+    {
+      "id": "u4-c-005",
+      "type": "MC",
+      "layer": "C",
+      "layer_subtype": "Clinical Judgment — Priority Action",
+      "ngn": false,
+      "nclex_category": "Safe and Effective Care Environment",
+      "nclex_subcategory": "Safety and Infection Control",
+      "concept_bucket": "Peritonitis Intervention",
+      "text": "A nurse is caring for a patient with peritonitis. The patient is in severe pain. Analgesics have been ordered. Which action is the nurse's PRIORITY before administering the analgesic?",
+      "options": {
+        "A": "Administer the analgesic immediately to reduce pain and promote comfort",
+        "B": "Obtain vital signs and perform a complete abdominal assessment first; analgesics may mask signs of deterioration during the initial workup",
+        "C": "Apply a warm compress to the abdomen to reduce discomfort before giving the medication",
+        "D": "Place the patient supine to facilitate drug absorption"
+      },
+      "correct_answers": ["B"],
+      "rationale": "During the initial workup of peritonitis, analgesics are sometimes withheld because masking pain can obscure the progression of signs (guarding, rebound tenderness, rigidity). The nurse must complete a thorough assessment first, document baseline findings, and notify the provider before administering pain medication. This is a nuanced priority decision — not that pain doesn't matter, but that clinical data collection takes precedence during workup.",
+      "source_reference": "Unit4_MASTERY_Guide.html (Bowel Obstruction Nursing Interventions — analgesic note); Unit4_MASTERY_Guide.html (Peritonitis section)",
+      "option_rationales": {
+        "A": "Comfort matters, but during active workup, analgesics can mask deteriorating peritonitis signs — assessment is the priority.",
+        "B": "CORRECT. Perform complete assessment first. Pain medication given without baseline data may obscure critical findings (rebound tenderness, guarding rigidity) needed for surgical decision-making.",
+        "C": "Warm compresses are CONTRAINDICATED with abdominal inflammatory processes — heat increases inflammation and perforation risk.",
+        "D": "Supine position is not recommended for peritonitis — semi-Fowler's is preferred (pools fluid in pelvis, reduces diaphragm pressure)."
+      }
+    }
+
+  ]
+}

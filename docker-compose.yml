@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  ngn-simulator:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      # Mount questions.json so you can swap question banks without rebuilding
+      - ./questions.json:/app/questions.json:ro
+      # Mount a persistent SQLite file so progress survives container restarts
+      - ngn_progress:/app/progress.db
+    restart: unless-stopped
+
+volumes:
+  ngn_progress:

@@ -1,1 +1,8 @@
+# ── Core app (always required) ────────────────────────────────────────────────
 streamlit==1.40.2
+streamlit-autorefresh==1.0.1
+pandas>=2.0.0
+
+# ── generate_bank.py only (install if you want to generate question banks) ────
+# openai>=1.30.0       # LLM calls — pip install openai
+# pdfplumber>=0.11.0   # PDF text extraction — pip install pdfplumber

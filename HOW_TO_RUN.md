@@ -1,66 +1,149 @@
-# NGN NCLEX Simulator — How to Run
+# How to Run — NGN NCLEX Simulator v4
 
-## Option A: Run Locally on Your Laptop (Recommended)
-
-This runs entirely on your computer. No internet required after setup.
-
-### First-time setup (do this once)
-
-1. **Install Python 3.11**
-   - Go to: https://www.python.org/downloads/release/python-3119/
-   - Scroll down, click **Windows installer (64-bit)**
-   - Run the installer — **CHECK the box "Add Python to PATH"** before clicking Install
-
-2. **Put all files in one folder**
-   - Create a folder on your Desktop called `nclex-simulator`
-   - Put these 3 files inside it:
-     - `app.py`
-     - `questions.json`
-     - `RUN_LOCAL.bat`
-
-### Every time you want to run it
-
-1. Double-click **RUN_LOCAL.bat**
-2. A black window opens and installs anything needed (first time only, ~1 min)
-3. Your browser opens automatically at `http://localhost:8501`
-4. Done — use the app just like the online version
-
-To stop: close the black window, or press **Ctrl+C** inside it.
+Four ways to run: Local (Python), Docker (local), Render.com (free cloud), HuggingFace Spaces (free cloud).
 
 ---
 
-## Option B: Run via Streamlit Cloud (Online)
+## Option 1 — Run Locally (Recommended for Development)
 
-If your Streamlit Cloud account is blocked (Error 403):
+### Requirements
+- Python **3.11** from https://www.python.org/downloads/ (NOT 3.12, 3.13, or 3.15)
+- `pip` (comes with Python)
 
-1. Go to https://share.streamlit.io
-2. Click **contact support** on the error page
-3. Tell them: *"My free account was blocked for fair-use limits. I am a nursing student using this for personal NCLEX study. Please unblock."*
-4. They usually respond within 24 hours and unblock you.
+### Steps
 
-Once unblocked, your app will be back online at the same URL automatically
-because your GitHub files are already up to date.
+```bash
+# 1. Unzip the project folder and open a terminal inside it
+cd ngn_app_v4
+
+# 2. (Optional) Create a virtual environment
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run the app
+streamlit run app.py
+```
+
+The app will open at http://localhost:8501 in your browser.
+
+### Adding New Question Banks
+- Drop any `.json` file following the schema in `QUESTION_SCHEMA.md` into the `ngn_app_v4/` folder
+- Click **🔄 Reload Question Banks** in the sidebar — no restart needed
 
 ---
 
-## How to Update Questions for a New Unit
+## Option 2 — Run with Docker (No Python Install Required)
 
-1. Generate a new `questions.json` for your new unit (using the QUESTION_SCHEMA.md as a prompt guide)
-2. Replace the `questions.json` file in your folder with the new one
-3. If running locally: restart the app (close and double-click RUN_LOCAL.bat again)
-4. If using Streamlit Cloud: upload the new `questions.json` to GitHub — it redeploys automatically
+### Requirements
+- Docker Desktop: https://www.docker.com/products/docker-desktop/
 
-That's it. You never need to touch `app.py`.
+### Steps
+
+```bash
+# 1. Open a terminal in the ngn_app_v4 folder
+
+# 2. Build and start the container
+docker compose up --build
+
+# 3. Open your browser to:
+http://localhost:8501
+```
+
+To stop:
+```bash
+docker compose down
+```
+
+Your progress database (`progress.db`) is persisted in a Docker volume, so scores survive container restarts.
 
 ---
 
-## File Descriptions
+## Option 3 — Deploy to Render.com (Free Cloud Hosting)
 
-| File | What it does |
-|------|-------------|
-| `app.py` | The simulator application — don't edit this |
-| `questions.json` | Your question bank — replace this for each new unit |
-| `requirements.txt` | Tells Streamlit Cloud which version to use |
-| `RUN_LOCAL.bat` | Double-click to run on Windows |
-| `QUESTION_SCHEMA.md` | Template for generating new questions with AI |
-| `HOW_TO_RUN.md` | This file |
+### One-time setup
+1. Create a free account at https://render.com
+2. Push this folder to a GitHub repo
+3. In Render dashboard: **New → Web Service → Connect GitHub repo**
+4. Render auto-detects `render.yaml` and configures the service
+5. Click **Deploy** — your app is live at `https://your-app.onrender.com`
+
+### Notes
+- Free tier sleeps after 15 minutes of inactivity (first request takes ~30s to wake)
+- `progress.db` does NOT persist on Render free tier — use a paid plan or Render Disk for persistence
+
+---
+
+## Option 4 — Deploy to HuggingFace Spaces (Free GPU/CPU Hosting)
+
+### One-time setup
+1. Create a free account at https://huggingface.co
+2. Create a new Space: **New Space → Docker SDK**
+3. Upload all files from `ngn_app_v4/` to the Space (or connect your GitHub repo)
+4. The `README.md` at the root contains the required HuggingFace frontmatter:
+   ```
+   ---
+   sdk: docker
+   app_port: 8501
+   ---
+   ```
+5. The Space builds and deploys automatically
+
+### Notes
+- HuggingFace Spaces with Docker SDK supports `app_port: 8501` which maps to your Streamlit server
+- `progress.db` is stored on the Space's ephemeral disk — progress may reset if the Space is restarted
+
+---
+
+## Option 5 — Windows Quick Launch (RUN_LOCAL.bat)
+
+Double-click `RUN_LOCAL.bat` — it handles the venv, install, and launch in one step.
+
+> ⚠️ Requires Python 3.11 already installed and available as `python` in your PATH.
+
+---
+
+## File Reference
+
+| File | Purpose |
+|------|---------|
+| `app.py` | Main entry point |
+| `config.py` | Layer info, stop rules, badge maps |
+| `grading.py` | Scoring logic + miss-type inference |
+| `persistence.py` | SQLite progress tracking |
+| `renderers.py` | Question rendering (all 6 types) |
+| `home.py` | Home screen, bank cards, session settings |
+| `questions.json` | Sample question bank (Unit 4) |
+| `QUESTION_SCHEMA.md` | Full JSON schema documentation |
+| `requirements.txt` | Python dependencies |
+| `Dockerfile` | Container definition |
+| `docker-compose.yml` | Local Docker orchestration |
+| `render.yaml` | Render.com auto-deploy config |
+| `README.md` | HuggingFace Space config header |
+
+---
+
+## Troubleshooting
+
+### "No module named streamlit"
+Run `pip install -r requirements.txt` again.
+
+### "streamlit_autorefresh not found"
+Run `pip install streamlit-autorefresh==1.0.1`. The timer still works without it (manual refresh), but live countdown requires this package.
+
+### Questions not updating after adding a new JSON file
+Click **🔄 Reload Question Banks** in the sidebar. This clears the cache and re-reads all JSON files.
+
+### "JSONDecodeError" in sidebar
+Your JSON file has a syntax error. Use https://jsonlint.com/ to validate it. The app will show the exact error line in the sidebar.
+
+### Progress database error
+Delete `progress.db` from the app folder and restart — the database is recreated automatically.
+
+### Python 3.15 installation errors (numpy, etc.)
+Python 3.15 is too new and not compatible with the required packages. Install Python 3.11 specifically from https://www.python.org/downloads/
