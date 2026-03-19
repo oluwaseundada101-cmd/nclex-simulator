@@ -719,60 +719,188 @@ def render_home():
     # ── Hero header ──
     st.markdown("""
     <div style="background:linear-gradient(135deg,#01696F 0%,#0C4E54 100%);
-                border-radius:12px;padding:24px 28px;margin-bottom:20px;color:white;">
-      <div style="font-size:1.5rem;font-weight:800;margin-bottom:4px;">🏥 NGN NCLEX Simulator</div>
-      <div style="font-size:0.92rem;opacity:0.85;">
-        Practice all 6 Next Generation NCLEX question types — one question at a time,
-        just like the real exam. No going back once you move forward.
+                border-radius:12px;padding:26px 30px;margin-bottom:22px;color:white;">
+      <div style="font-size:1.6rem;font-weight:800;margin-bottom:6px;">🏥 NGN NCLEX Simulator</div>
+      <div style="font-size:0.95rem;opacity:0.9;line-height:1.6;">
+        A structured practice system built on the <strong>Master Framework</strong> — the same pipeline used
+        to generate your question banks. Every question in this simulator was built in layers so you build
+        knowledge the right way: facts first, then understanding, then judgment.
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── How it works ──
-    st.markdown("### How to use this simulator")
-    steps = st.columns(4)
-    step_data = [
-        ("1", "#FEF3C7", "#92400E", "Pick a question bank",
-         "Each bank = one unit of content. Select it on the left, then click Start."),
-        ("2", "#EFF6FF", "#1E40AF", "Answer each question",
-         "Read the scenario, answer every part, then click Next. You cannot go back."),
-        ("3", "#F0FDF4", "#14532D", "Submit & see your score",
-         "At the end you get your percentage, breakdown by question type, and full rationales."),
-        ("4", "#FDF4FF", "#581C87", "Study your weak spots",
-         "Use the results to find what you missed, read the rationale, then retake."),
-    ]
-    for col,(num,bg,fg,title,desc) in zip(steps,step_data):
-        col.markdown(
-            f'<div style="background:{bg};border-radius:10px;padding:14px;height:100%;">'  
-            f'<div style="font-size:1.6rem;font-weight:900;color:{fg};line-height:1;">{num}</div>'
-            f'<div style="font-size:0.88rem;font-weight:700;color:{fg};margin:6px 0 4px;">{title}</div>'
-            f'<div style="font-size:0.8rem;color:#374151;line-height:1.5;">{desc}</div>'
-            f'</div>', unsafe_allow_html=True)
+    # ── TWO-COLUMN LAYOUT: Framework explanation LEFT, Quick start RIGHT ──
+    left, right = st.columns([3, 2], gap="large")
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    with left:
+        # ── THE LAYER SYSTEM ──
+        st.markdown("""
+        <div style="font-size:1.1rem;font-weight:800;color:#111827;margin-bottom:4px;">📚 How the question layers work</div>
+        <div style="font-size:0.83rem;color:#6B7280;margin-bottom:14px;">
+          Every question bank is organized into 6 layers. Each layer builds on the last.
+          If you're new — start at Layer A and work forward. Don't jump to Layer C before you've nailed the facts.
+        </div>
+        """, unsafe_allow_html=True)
 
-    # ── Question type guide ──
-    with st.expander("What are the 6 question types? (click to expand)", expanded=False):
-        types = [
-            ("badge-mc",    "Multiple Choice (MC)",
-             "The classic format. Read the stem, pick the ONE best answer from 4 options."),
-            ("badge-sata",  "Select All That Apply (SATA)",
-             "Pick every correct answer — there's no partial credit hint. Could be 2, 3, 4, or 5 correct."),
-            ("badge-bowtie","Bowtie",
-             "Three-part NGN item: identify the condition, choose 2 nursing actions, choose 2 parameters to monitor."),
-            ("badge-matrix","Matrix Grid",
-             "A table where each row is a finding and you assign it to the correct column (e.g. Expected vs. Concerning)."),
-            ("badge-trend", "Trend",
-             "Review lab/vital data collected over time and classify each parameter: Improving, Worsening, or No change."),
-            ("badge-cloze", "Drop-Down / Cloze",
-             "A clinical statement with blanks. Select the best answer for each blank from a dropdown list."),
+        layer_rows = [
+            ("badge-layer-a",  "Layer A",        "Recall Anchors",
+             "Pure fact retrieval — exact numbers, thresholds, timelines, hold parameters. "
+             "No clinical context. Just: what is the fact? "
+             "<em>Target: ≥95% before moving on.</em>"),
+            ("badge-layer-aa", "Layer A-Applied", "Facts in Disguise",
+             "Same Tier-1 facts, but now hidden inside a patient scenario. "
+             "You have to recognize the fact is being tested even though it looks like a judgment question. "
+             "<em>Target: ≥90%.</em>"),
+            ("badge-layer-b",  "Layer B",        "Mechanism / Physiology",
+             "Why does the rule exist? Questions test your understanding of the underlying "
+             "pathophysiology or drug mechanism — not just the rule itself. "
+             "<em>Required before Layer C makes sense.</em>"),
+            ("badge-layer-c",  "Layer C",        "Clinical Judgment (NCLEX Core)",
+             "This is the biggest section (45–50% of questions). Priority, first action, "
+             "complication recognition, teaching evaluation, delegation, medication safety. "
+             "This is what the real NCLEX tests most. <em>Target: ≥90%.</em>"),
+            ("badge-layer-d",  "Layer D",        "Confusable Pairs",
+             "One question per named confusion pair — the things students consistently mix up. "
+             "Built from the Interference Map of your unit. If you miss these, your rationale will tell you exactly "
+             "what the confusion was. <em>Target: ≥85%.</em>"),
+            ("badge-layer-ngn","NGN Module",     "Next Generation NCLEX Formats",
+             "Bowtie, Matrix Grid, Trend, Drop-Down/Cloze — the new item types on the 2026 NCLEX. "
+             "These test clinical judgment across multiple dimensions at once. "
+             "<em>Only attempt after Layer C is solid.</em>"),
         ]
-        for cls,name,desc in types:
+        for cls, label, title, desc in layer_rows:
             st.markdown(
-                f'<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;">'
-                f'<span class="badge {cls}" style="white-space:nowrap;margin-top:2px;">{name}</span>'
-                f'<span style="font-size:0.87rem;color:#374151;">{desc}</span>'
+                f'<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #F3F4F6;align-items:flex-start;">'
+                f'  <div style="min-width:110px;padding-top:2px;">'
+                f'    <span class="badge {cls}" style="white-space:nowrap;">{label}</span>'
+                f'    <div style="font-size:0.72rem;color:#6B7280;margin-top:3px;font-weight:600;">{title}</div>'
+                f'  </div>'
+                f'  <div style="font-size:0.83rem;color:#374151;line-height:1.55;">{desc}</div>'
+                f'</div>',
+                unsafe_allow_html=True)
+
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+        # ── STUDY SCHEDULE ──
+        st.markdown("""
+        <div style="font-size:1.1rem;font-weight:800;color:#111827;margin-bottom:4px;">📅 Recommended study schedule per unit</div>
+        <div style="font-size:0.83rem;color:#6B7280;margin-bottom:12px;">
+          Follow this order for every new unit. Only move to the next layer once you hit the target score.
+        </div>
+        """, unsafe_allow_html=True)
+
+        sched_rows = [
+            ("Day 1",       "badge-layer-a",  "Layer A",         "≥95%", "Drill raw facts until they're instant recall"),
+            ("Day 2",       "badge-layer-aa", "Layer A-Applied",  "≥90%", "Same facts in clinical form — can you still recognize them?"),
+            ("Day 3",       "badge-layer-b",  "Layer B",          "—",    "Understand the why behind every rule"),
+            ("Days 4–5",    "badge-layer-c",  "Layer C",          "≥90%", "Clinical judgment — the biggest section, needs the most reps"),
+            ("Day 6",       "badge-layer-d",  "Layer D",          "≥85%", "Confusable pairs — kill your most dangerous mix-ups"),
+            ("Days 7–8",    "badge-layer-ngn","NGN Module",       "—",    "All NGN item types — bowtie, matrix, trend, cloze"),
+            ("Exam eve",    "badge-layer-c",  "All Layers timed", "≥68%", "Full simulation — mixed, timed, no going back"),
+        ]
+        header = ('<div style="display:grid;grid-template-columns:72px 110px 1fr 44px;'
+                  'gap:8px;padding:6px 8px;background:#F9FAFB;border-radius:6px 6px 0 0;'
+                  'border:1px solid #E5E7EB;font-size:0.72rem;font-weight:700;color:#6B7280;text-transform:uppercase;">'
+                  '<div>When</div><div>Layer</div><div>Goal</div><div>Target</div></div>')
+        st.markdown(header, unsafe_allow_html=True)
+        for i,(day,cls,lbl,target,goal) in enumerate(sched_rows):
+            bg = "#FFFFFF" if i%2==0 else "#F9FAFB"
+            last = "border-radius:0 0 6px 6px;" if i==len(sched_rows)-1 else ""
+            st.markdown(
+                f'<div style="display:grid;grid-template-columns:72px 110px 1fr 44px;'
+                f'gap:8px;padding:7px 8px;background:{bg};border:1px solid #E5E7EB;border-top:none;{last}">'
+                f'  <div style="font-size:0.78rem;font-weight:700;color:#374151;align-self:center;">{day}</div>'
+                f'  <div style="align-self:center;"><span class="badge {cls}" style="white-space:nowrap;font-size:0.67rem;">{lbl}</span></div>'
+                f'  <div style="font-size:0.78rem;color:#374151;align-self:center;">{goal}</div>'
+                f'  <div style="font-size:0.78rem;font-weight:700;color:#01696F;align-self:center;">{target}</div>'
+                f'</div>',
+                unsafe_allow_html=True)
+
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+        # ── QUESTION TYPES (collapsed — reference only) ──
+        with st.expander("What are the 6 NGN question formats? (click to expand)"):
+            types = [
+                ("badge-mc",    "Multiple Choice",
+                 "Pick the ONE best answer from 4 options. Classic NCLEX format."),
+                ("badge-sata",  "Select All That Apply (SATA)",
+                 "Pick every correct answer — could be 2, 3, 4, or 5 correct. No hints."),
+                ("badge-bowtie","Bowtie",
+                 "Three-part item: identify the patient's condition (center), select 2 nursing actions (left), "
+                 "select 2 parameters to monitor (right)."),
+                ("badge-matrix","Matrix Grid",
+                 "A table where each row is a clinical finding. You classify each finding into the correct column "
+                 "(e.g. Expected vs. Unexpected vs. Needs follow-up)."),
+                ("badge-trend", "Trend",
+                 "Lab or vital sign data collected over time. Classify each parameter: Improving, Worsening, or No change."),
+                ("badge-cloze", "Drop-Down / Cloze",
+                 "A clinical sentence with blanks. Select the best answer for each blank from a dropdown menu."),
+            ]
+            for cls,name,desc in types:
+                st.markdown(
+                    f'<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;">'
+                    f'<span class="badge {cls}" style="white-space:nowrap;margin-top:2px;">{name}</span>'
+                    f'<span style="font-size:0.84rem;color:#374151;line-height:1.5;">{desc}</span>'
+                    f'</div>', unsafe_allow_html=True)
+
+    with right:
+        # ── HOW TO USE (4 steps) ──
+        st.markdown("""
+        <div style="font-size:1.1rem;font-weight:800;color:#111827;margin-bottom:12px;">▶ How to start a session</div>
+        """, unsafe_allow_html=True)
+        steps = [
+            ("1", "#FEF3C7", "#92400E", "Pick a question bank",
+             "Each bank is one unit of course content (e.g. Unit 4). Select it below, configure settings, then click Start."),
+            ("2", "#EFF6FF", "#1E40AF", "Choose your layer",
+             "Use 'Study focus' to drill one layer at a time, or leave it on 'All Layers' for a full mixed session."),
+            ("3", "#F0FDF4", "#14532D", "Answer — no going back",
+             "Read the scenario, answer every part, click Next. You cannot return to a previous question, just like the real NCLEX."),
+            ("4", "#FDF4FF", "#581C87", "Review your results",
+             "After submitting you get your score, breakdown by layer and question type, and full rationales for every question."),
+        ]
+        for num,bg,fg,title,desc in steps:
+            st.markdown(
+                f'<div style="background:{bg};border-radius:9px;padding:12px 14px;margin-bottom:10px;">'
+                f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'
+                f'<span style="font-size:1.3rem;font-weight:900;color:{fg};line-height:1;">{num}</span>'
+                f'<span style="font-size:0.88rem;font-weight:700;color:{fg};">{title}</span>'
+                f'</div>'
+                f'<div style="font-size:0.8rem;color:#374151;line-height:1.5;">{desc}</div>'
                 f'</div>', unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # ── SCORING RULES ──
+        st.markdown("""
+        <div style="font-size:1.0rem;font-weight:700;color:#111827;margin-bottom:8px;">📊 Scoring</div>
+        """, unsafe_allow_html=True)
+        scoring = [
+            ("Multiple Choice",      "1 pt — all or nothing"),
+            ("SATA",                 "+1 correct, −1 wrong (partial credit)"),
+            ("Bowtie / Matrix / Trend / Cloze", "1 pt per correct cell"),
+            ("Passing threshold",    "68% (NCLEX standard)"),
+        ]
+        for label, rule in scoring:
+            st.markdown(
+                f'<div style="display:flex;justify-content:space-between;padding:5px 0;'
+                f'border-bottom:1px solid #F3F4F6;font-size:0.82rem;">'
+                f'<span style="color:#6B7280;">{label}</span>'
+                f'<span style="font-weight:600;color:#111827;">{rule}</span>'
+                f'</div>', unsafe_allow_html=True)
+
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+        # ── ADD NEW UNIT TIP ──
+        st.markdown("""
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:0.85rem;font-weight:700;color:#14532D;margin-bottom:4px;">💡 Adding a new unit</div>
+          <div style="font-size:0.8rem;color:#374151;line-height:1.55;">
+            Generate a <code>questions.json</code> for your new unit using the QUESTION_SCHEMA.md as
+            the AI prompt guide. Replace the existing <code>questions.json</code> file — you never
+            need to touch <code>app.py</code>.
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -793,12 +921,17 @@ def render_home():
             type_pills = "".join(
                 f'<span class="badge {TYPE_BADGE.get(t,("badge-ngn",t))[0]}">{v} {t}</span>'
                 for t,v in tc.items())
+            layer_pills = "".join(
+                f'<span class="badge {LAYER_INFO.get(l,{}).get("cls","badge-ngn")}" style="font-size:0.65rem;">'
+                f'{lc[l]} {LAYER_INFO.get(l,{}).get("label",l)}</span>'
+                for l in ["A","A-Applied","B","C","D","NGN"] if l in lc)
             total_q = bank["question_count"]
             st.markdown(
                 f'<div class="qcard" style="padding:1rem 1.4rem;">'
                 f'<div style="font-size:1rem;font-weight:700;color:#111827;">{bank["title"]}</div>'
                 f'<div style="color:#6B7280;font-size:0.82rem;margin:4px 0;">{bank.get("description","")}</div>'
                 f'<div style="margin-top:6px;">{type_pills}</div>'
+                f'<div style="margin-top:4px;">{layer_pills}</div>'
                 f'<div style="color:#9CA3AF;font-size:0.77rem;margin-top:4px;">{total_q} questions total</div>'
                 f'</div>', unsafe_allow_html=True)
             if st.button(f"▶  Start {bank['title']}", key=f"start_{bid}",
@@ -811,7 +944,7 @@ def render_home():
                 st.rerun()
 
     with c2:
-        st.markdown("### Test Settings")
+        st.markdown("### Session Settings")
         if BANKS:
             sel  = st.selectbox("Question bank", list(BANKS.keys()),
                                 format_func=lambda x: BANKS[x]["title"],
@@ -830,9 +963,9 @@ def render_home():
             lay_key_map = {v:k for k,v in zip(["All Layers"]+avail, lay_opts)}
 
             lay_label = st.selectbox(
-                "Study focus",
+                "Study focus (layer)",
                 lay_opts,
-                help="Pick a specific layer to drill, or leave on 'All Layers' for a full mixed session.",
+                help="Pick one layer to drill, or leave on 'All Layers' for a full mixed session.",
                 key=f"lay_label_{sel}")
             lay_sel = lay_key_map.get(lay_label, "All Layers")
             st.session_state[f"lay_{sel}"] = lay_sel
@@ -845,32 +978,6 @@ def render_home():
                       help="Timer counts down during the test. At 0 it auto-submits.")
             st.checkbox("Shuffle question order", value=True, key=f"sh_{sel}",
                         help="Randomize the order so you don't memorize positions.")
-
-        st.markdown("---")
-        st.markdown("""
-**Scoring rules:**
-- Multiple Choice: 1 pt, all-or-nothing
-- SATA: partial credit (+1 correct, −1 wrong)
-- Bowtie / Matrix / Trend / Drop-Down: 1 pt per correct cell
-- **68% = passing** (NCLEX standard)
-        """)
-        st.markdown("---")
-        with st.expander("Study schedule guide"):
-            st.markdown("""
-**Use Study Focus to drill by layer in order:**
-
-| Day | Focus | Goal |
-|-----|-------|------|
-| 1 | Layer A | Recall raw facts |
-| 2 | Layer A-Applied | Same facts in clinical form |
-| 3 | Layer B | Understand the physiology |
-| 4–5 | Layer C | Clinical judgment (biggest section) |
-| 6 | Layer D | Confusable pairs — don't mix these up |
-| 7–8 | NGN | All NGN item types |
-| Exam eve | All Layers, timed | Full simulation |
-
-Only move to the next layer once you hit the target score on results.
-            """)
 
 # ─── TEST ─────────────────────────────────────────────────────────────────────
 def render_test():
